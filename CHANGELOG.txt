@@ -1,3 +1,7 @@
+Version 1.17.4
+- Moved the VTT access panel in the GM editor so it appears below Grid overlay instead of below Display controls.
+- No VTT access behavior, game state, or backend logic changes.
+
 Version 1.17.3
 - Restored the Player activity panel to the original stacked, full-width layout.
 - Connections and Player movement remain separate sections in their original order.

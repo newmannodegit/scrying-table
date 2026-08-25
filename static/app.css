@@ -1325,6 +1325,9 @@ code {
   .editor-page .editor-action-grid {
     grid-template-columns: 1fr;
   }
+  .editor-page .vtt-access-panel {
+    grid-column: auto;
+  }
   .editor-page .setup-summary-help {
     display: none;
   }
@@ -2072,6 +2075,9 @@ body.wallmap-page {
 /* Multi-map library: compact enough for the editor, with activation kept visually obvious. */
 .editor-page .map-library-panel {
   grid-column: 1 / -1;
+}
+.editor-page .vtt-access-panel {
+  grid-column: 2;
 }
 .editor-page .map-library-heading {
   align-items: center;
