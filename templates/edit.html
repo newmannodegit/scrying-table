@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>The Scrying Table - VTT Editor</title>
-  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.5') }}">
-  <script src="{{ url_for('static',filename='editor.js',v='1.17.5') }}" defer></script>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.6') }}">
+  <script src="{{ url_for('static',filename='editor.js',v='1.17.6') }}" defer></script>
 </head>
 <body class="editor-page">
 <main id="editorApp" class="editor-card" data-csrf-token="{{ csrf }}">
@@ -31,7 +31,7 @@
       <details id="setupControls" class="editor-setup-collapse" open>
         <summary>
           <span>Map / display setup</span>
-          <span class="setup-summary-help">Map library, display controls, grid, VTT access</span>
+          <span class="setup-summary-help">Map library, VTT access, grid, display controls</span>
         </summary>
         <div class="editor-setup-grid">
         <section class="panel map-library-panel">
@@ -50,6 +50,55 @@
           <p class="help-text">JPEG, PNG, GIF, WebP, BMP, TIFF. Maximum {{ max_mb }} MB per map, up to {{ max_maps }} maps.</p>
           <div id="mapLibraryList" class="map-library-list" aria-live="polite"></div>
         </section>
+
+        <div class="editor-setup-column">
+        <section class="panel">
+          <h2>VTT access</h2>
+          <p class="help-text">Player portal: <a href="{{ public_prefix }}/player" target="_blank">{{ public_prefix }}/player</a></p>
+          <p id="vttPasswordStatus" class="help-text">Loading password status…</p>
+          <form id="vttPasswordForm">
+            <div class="password-grid">
+              <div>
+                <label for="vttPassword">Shared game password</label>
+                <input id="vttPassword" type="password" autocomplete="new-password" required>
+              </div>
+              <div>
+                <label for="vttPasswordConfirm">Confirm game password</label>
+                <input id="vttPasswordConfirm" type="password" autocomplete="new-password" required>
+              </div>
+            </div>
+            <div class="button-row">
+              <button class="primary-button">Set / Change Password</button>
+              <button id="clearVttPasswordButton" type="button" class="danger-button">Disable Player VTT Access</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Grid overlay</h2>
+          <div class="grid-heading-row">
+            <label class="switch-row" for="gridEnabled">
+              <input id="gridEnabled" type="checkbox" checked>
+              <span>Show grid over the map</span>
+            </label>
+            <div class="compact-inline-field grid-color-inline-field">
+              <label for="gridColor">Grid color</label>
+              <input id="gridColor" type="color" value="#ffffff">
+            </div>
+          </div>
+          <label for="gridSizeSlider">Grid square size</label>
+          <div class="control-row">
+            <input id="gridSizeSlider" type="range" min="1" max="15" step="0.25" value="5">
+            <output id="gridSizeValue">5%</output>
+          </div>
+          <label for="gridOpacitySlider">Grid opacity</label>
+          <div class="control-row">
+            <input id="gridOpacitySlider" type="range" min="10" max="100" step="5" value="100">
+            <output id="gridOpacityValue">100%</output>
+          </div>
+          <p class="help-text">These grid settings are saved separately for each map. Grid size is relative to that map's width.</p>
+        </section>
+        </div>
 
         <div class="editor-setup-column">
         <section class="panel">
@@ -105,55 +154,6 @@
             <output id="mobileTokenSizeValue">6%</output>
           </div>
           <p class="help-text">Token sizes are stored relative to the map. Viewer and player pages use the mobile size on touch-oriented devices; GM pages continue to use the global size.</p>
-        </section>
-        </div>
-
-        <div class="editor-setup-column">
-        <section class="panel">
-          <h2>Grid overlay</h2>
-          <div class="grid-heading-row">
-            <label class="switch-row" for="gridEnabled">
-              <input id="gridEnabled" type="checkbox" checked>
-              <span>Show grid over the map</span>
-            </label>
-            <div class="compact-inline-field grid-color-inline-field">
-              <label for="gridColor">Grid color</label>
-              <input id="gridColor" type="color" value="#ffffff">
-            </div>
-          </div>
-          <label for="gridSizeSlider">Grid square size</label>
-          <div class="control-row">
-            <input id="gridSizeSlider" type="range" min="1" max="15" step="0.25" value="5">
-            <output id="gridSizeValue">5%</output>
-          </div>
-          <label for="gridOpacitySlider">Grid opacity</label>
-          <div class="control-row">
-            <input id="gridOpacitySlider" type="range" min="10" max="100" step="5" value="100">
-            <output id="gridOpacityValue">100%</output>
-          </div>
-          <p class="help-text">These grid settings are saved separately for each map. Grid size is relative to that map's width.</p>
-        </section>
-
-        <section class="panel">
-          <h2>VTT access</h2>
-          <p class="help-text">Player portal: <a href="{{ public_prefix }}/player" target="_blank">{{ public_prefix }}/player</a></p>
-          <p id="vttPasswordStatus" class="help-text">Loading password status…</p>
-          <form id="vttPasswordForm">
-            <div class="password-grid">
-              <div>
-                <label for="vttPassword">Shared game password</label>
-                <input id="vttPassword" type="password" autocomplete="new-password" required>
-              </div>
-              <div>
-                <label for="vttPasswordConfirm">Confirm game password</label>
-                <input id="vttPasswordConfirm" type="password" autocomplete="new-password" required>
-              </div>
-            </div>
-            <div class="button-row">
-              <button class="primary-button">Set / Change Password</button>
-              <button id="clearVttPasswordButton" type="button" class="danger-button">Disable Player VTT Access</button>
-            </div>
-          </form>
         </section>
         </div>
 
