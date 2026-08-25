@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>The Scrying Table - VTT: {{ player_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+  <script>window.VTT_BASE = {{ request.script_root|tojson }};</script>
+  <script src="{{ url_for('static',filename='vtt.js',v='1.17.3') }}" defer></script>
+</head>
+<body class="vtt-page">
+  <main id="vttApp" class="map-stage" data-csrf-token="{{ csrf }}">
+    <div id="mapContent" class="map-content" hidden>
+      <img id="mapImage" class="map-image" alt="">
+      <svg id="darknessLayer" class="darkness-layer" aria-hidden="true"></svg>
+      <svg id="doorLayer" class="public-door-layer" aria-hidden="true"></svg>
+      <div id="gridLayer" class="grid-layer" aria-hidden="true"></div>
+      <div id="areaLayer" class="area-layer" aria-hidden="true"></div>
+      <div id="tokenLayer" class="token-layer"></div>
+    </div>
+  </main>
+  <div class="map-info-stack">
+    <aside id="currentInitiative" class="current-initiative" aria-live="polite" aria-label="Current initiative" hidden></aside>
+    <aside id="recentMoves" class="recent-moves" aria-live="polite" aria-label="Recent token moves" hidden></aside>
+  </div>
+  <aside class="vtt-toolbar" aria-live="polite">
+    <span id="playerName">{{ player_name }}</span>
+    <span id="movementStatus" class="movement-status">Loading…</span>
+    <a href="{{ url_for('player_help') }}" target="_blank">Help</a>
+    <form method="post" action="{{ url_for('vtt_logout') }}">
+      <input type="hidden" name="_csrf_token" value="{{ csrf }}">
+      <button type="submit" class="toolbar-button">Sign out</button>
+    </form>
+  </aside>
+</body>
+</html>

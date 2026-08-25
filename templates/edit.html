@@ -1,0 +1,374 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Scrying Table - VTT Editor</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+  <script src="{{ url_for('static',filename='editor.js',v='1.17.3') }}" defer></script>
+</head>
+<body class="editor-page">
+<main id="editorApp" class="editor-card" data-csrf-token="{{ csrf }}">
+  <header class="editor-header">
+    <div>
+      <h1>The Scrying Table - VTT Editor</h1>
+      <p>GM: <strong>{{ gm_user }}</strong>. Map, token, and movement changes update this game only.</p>
+    </div>
+    <div class="header-actions">
+      <a class="button-link" href="{{ public_prefix }}/viewer" target="_blank">Open viewer</a>
+      <a class="button-link" href="{{ url_for('admin_help') }}" target="_blank">How to use</a>
+      <form method="post" action="{{ url_for('logout') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf }}">
+        <button type="submit">Switch GM</button>
+      </form>
+    </div>
+  </header>
+
+  <div id="statusMessage" class="message" hidden></div>
+
+  <div class="editor-grid">
+    <div class="editor-left-column">
+      <details id="setupControls" class="editor-setup-collapse" open>
+        <summary>
+          <span>Map / display setup</span>
+          <span class="setup-summary-help">Map library, display controls, grid, VTT access</span>
+        </summary>
+        <div class="editor-setup-grid">
+        <section class="panel map-library-panel">
+          <div class="panel-heading-row map-library-heading">
+            <div>
+              <h2>Map library</h2>
+              <p class="help-text">Prepare maps ahead of time, then activate the next encounter when the table is ready.</p>
+            </div>
+            <span id="mapLibraryCount" class="map-library-count"></span>
+          </div>
+          <form id="uploadForm" class="map-upload-form">
+            <input id="mapNameInput" type="text" maxlength="80" placeholder="Map name (optional)">
+            <input id="imageInput" name="image" type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.tif,.tiff" required>
+            <button class="primary-button">Add map</button>
+          </form>
+          <p class="help-text">JPEG, PNG, GIF, WebP, BMP, TIFF. Maximum {{ max_mb }} MB per map, up to {{ max_maps }} maps.</p>
+          <div id="mapLibraryList" class="map-library-list" aria-live="polite"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Display controls</h2>
+          <div class="control-row">
+            <button id="zoomOutButton" type="button">Zoom −</button>
+            <input id="zoomSlider" type="range" min="10" max="500" step="5" value="100">
+            <button id="zoomInButton" type="button">Zoom +</button>
+            <output id="zoomValue">100%</output>
+          </div>
+          <div class="display-action-row">
+            <div class="button-row">
+              <button id="fitButton" type="button">Fit to Screen</button>
+              <button id="clearButton" class="danger-button" type="button">Clear Display</button>
+            </div>
+            <div class="compact-inline-field background-inline-field">
+              <label for="backgroundSelect">Background</label>
+              <select id="backgroundSelect">
+                <option value="#000000">Black</option>
+                <option value="#202020">Dark gray</option>
+                <option value="#ffffff">White</option>
+                <option value="#123b2a">Green</option>
+                <option value="#3a2d1f">Brown</option>
+              </select>
+            </div>
+          </div>
+          <hr>
+          <label class="switch-row" for="movementEnabled">
+            <input id="movementEnabled" type="checkbox" checked>
+            <span>Allow players to move their own tokens</span>
+          </label>
+          <label class="switch-row" for="darkEnvironment">
+            <input id="darkEnvironment" type="checkbox">
+            <span>Dark environment</span>
+          </label>
+          <label class="switch-row" for="stackPlayerVision">
+            <input id="stackPlayerVision" type="checkbox">
+            <span>Stack player visibility circles on player pages</span>
+          </label>
+          <label class="switch-row" for="persistentExploredFog">
+            <input id="persistentExploredFog" type="checkbox">
+            <span>Persistent explored-area fog</span>
+          </label>
+          <p class="help-text">The viewer uses all party viewpoints. Player pages use only their own viewpoint unless stacking is enabled. Persistent explored-area fog keeps previously seen terrain dimly visible; tokens, doors, and areas still require current line of sight.</p>
+          <label for="tokenSizeSlider">Global token size</label>
+          <div class="control-row">
+            <input id="tokenSizeSlider" type="range" min="1" max="20" step="0.5" value="4">
+            <output id="tokenSizeValue">4%</output>
+          </div>
+          <label for="mobileTokenSizeSlider">Mobile token size</label>
+          <div class="control-row">
+            <input id="mobileTokenSizeSlider" type="range" min="1" max="20" step="0.5" value="6">
+            <output id="mobileTokenSizeValue">6%</output>
+          </div>
+          <p class="help-text">Token sizes are stored relative to the map. Viewer and player pages use the mobile size on touch-oriented devices; GM pages continue to use the global size.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Grid overlay</h2>
+          <div class="grid-heading-row">
+            <label class="switch-row" for="gridEnabled">
+              <input id="gridEnabled" type="checkbox" checked>
+              <span>Show grid over the map</span>
+            </label>
+            <div class="compact-inline-field grid-color-inline-field">
+              <label for="gridColor">Grid color</label>
+              <input id="gridColor" type="color" value="#ffffff">
+            </div>
+          </div>
+          <label for="gridSizeSlider">Grid square size</label>
+          <div class="control-row">
+            <input id="gridSizeSlider" type="range" min="1" max="15" step="0.25" value="5">
+            <output id="gridSizeValue">5%</output>
+          </div>
+          <label for="gridOpacitySlider">Grid opacity</label>
+          <div class="control-row">
+            <input id="gridOpacitySlider" type="range" min="10" max="100" step="5" value="100">
+            <output id="gridOpacityValue">100%</output>
+          </div>
+          <p class="help-text">These grid settings are saved separately for each map. Grid size is relative to that map's width.</p>
+        </section>
+
+        <section class="panel">
+          <h2>VTT access</h2>
+          <p class="help-text">Player portal: <a href="{{ public_prefix }}/player" target="_blank">{{ public_prefix }}/player</a></p>
+          <p id="vttPasswordStatus" class="help-text">Loading password status…</p>
+          <form id="vttPasswordForm">
+            <div class="password-grid">
+              <div>
+                <label for="vttPassword">Shared game password</label>
+                <input id="vttPassword" type="password" autocomplete="new-password" required>
+              </div>
+              <div>
+                <label for="vttPasswordConfirm">Confirm game password</label>
+                <input id="vttPasswordConfirm" type="password" autocomplete="new-password" required>
+              </div>
+            </div>
+            <div class="button-row">
+              <button class="primary-button">Set / Change Password</button>
+              <button id="clearVttPasswordButton" type="button" class="danger-button">Disable Player VTT Access</button>
+            </div>
+          </form>
+        </section>
+
+        </div>
+      </details>
+
+      <div class="editor-action-grid">
+        <section class="panel">
+          <h2>Add token</h2>
+          <form id="addTokenForm">
+            <div class="form-grid">
+              <div>
+                <label for="newTokenName">Name</label>
+                <input id="newTokenName" type="text" maxlength="60" placeholder="John" required>
+              </div>
+              <div>
+                <label for="newTokenColor">Color</label>
+                <input id="newTokenColor" type="color" value="#e53935">
+              </div>
+            </div>
+            <div class="token-options-grid">
+              <div>
+                <label for="newTokenInitiative">Initiative <span class="help-text">(optional)</span></label>
+                <input id="newTokenInitiative" class="initiative-input" type="number" min="-99" max="99" step="1" inputmode="numeric" placeholder="17">
+              </div>
+              <div class="token-control-option">
+                <label class="switch-row" for="newTokenVisible">
+                  <input id="newTokenVisible" type="checkbox">
+                  <span>Visible</span>
+                </label>
+              </div>
+              <div class="token-control-option">
+                <label class="switch-row" for="newTokenPlayerControlled">
+                  <input id="newTokenPlayerControlled" type="checkbox" checked>
+                  <span>Player character</span>
+                </label>
+              </div>
+            </div>
+            <div class="delegate-control-row add-token-final-row">
+              <div>
+                <label for="newMovedByTokenId">Moved by player <span class="help-text">(optional)</span></label>
+                <select id="newMovedByTokenId">
+                  <option value="">Nobody / GM only</option>
+                </select>
+              </div>
+              <button class="primary-button">Add Token</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Area of effect overlays</h2>
+          <p class="help-text">Place translucent circles, cones, or lines on the map. Drag an overlay in the GM preview to position it.</p>
+          <form id="addAreaForm">
+            <div class="area-form-grid">
+              <div>
+                <label for="newAreaName">Name</label>
+                <input id="newAreaName" type="text" maxlength="60" placeholder="Burning Hands">
+              </div>
+              <div>
+                <label for="newAreaShape">Shape</label>
+                <select id="newAreaShape">
+                  <option value="circle">Circle</option>
+                  <option value="cone">Cone</option>
+                  <option value="line">Line</option>
+                </select>
+              </div>
+              <div>
+                <label for="newAreaColor">Color</label>
+                <input id="newAreaColor" type="color" value="#e53935">
+              </div>
+            </div>
+            <div id="newAreaCircleSettings" class="area-shape-settings">
+              <div>
+                <label for="newAreaDiameter">Diameter</label>
+                <div class="area-size-input">
+                  <input id="newAreaDiameter" type="number" min="1" max="200" step="1" value="20" inputmode="decimal">
+                  <span>% map width</span>
+                </div>
+              </div>
+            </div>
+            <div id="newAreaConeSettings" class="area-shape-settings cone-settings" hidden>
+              <div>
+                <label for="newAreaLength">Length</label>
+                <div class="area-size-input">
+                  <input id="newAreaLength" type="number" min="0.5" max="60" step="0.5" value="6" inputmode="decimal">
+                  <span>grid squares</span>
+                </div>
+              </div>
+              <div>
+                <label for="newAreaAngle">Cone angle</label>
+                <div class="area-size-input">
+                  <input id="newAreaAngle" type="number" min="15" max="120" step="1" value="60" inputmode="decimal">
+                  <span>°</span>
+                </div>
+              </div>
+              <div>
+                <label for="newAreaRotation">Direction</label>
+                <div class="area-size-input">
+                  <input id="newAreaRotation" type="number" min="0" max="359" step="1" value="0" inputmode="decimal">
+                  <span>°</span>
+                </div>
+              </div>
+            </div>
+            <div id="newAreaLineSettings" class="area-shape-settings cone-settings" hidden>
+              <div>
+                <label for="newAreaLineLength">Length</label>
+                <div class="area-size-input">
+                  <input id="newAreaLineLength" type="number" min="0.5" max="60" step="0.5" value="6" inputmode="decimal">
+                  <span>grid squares</span>
+                </div>
+              </div>
+              <div>
+                <label for="newAreaLineWidth">Width</label>
+                <div class="area-size-input">
+                  <input id="newAreaLineWidth" type="number" min="0.25" max="20" step="0.25" value="1" inputmode="decimal">
+                  <span>grid squares</span>
+                </div>
+              </div>
+              <div>
+                <label for="newAreaLineRotation">Direction</label>
+                <div class="area-size-input">
+                  <input id="newAreaLineRotation" type="number" min="0" max="359" step="1" value="0" inputmode="decimal">
+                  <span>°</span>
+                </div>
+              </div>
+            </div>
+            <button id="addAreaButton" class="primary-button">Add Circle</button>
+          </form>
+          <div id="areaList" class="area-list"><p class="help-text">No areas yet.</p></div>
+        </section>
+      </div>
+
+      <section class="panel tokens-panel">
+        <div class="panel-heading-row token-panel-heading">
+          <div>
+            <h2>Tokens</h2>
+          </div>
+          <label class="switch-row master-token-visibility" for="tokensVisible">
+            <input id="tokensVisible" type="checkbox" checked>
+            <span>Show all tokens</span>
+          </label>
+        </div>
+        <div id="tokenList" class="token-groups"><p class="help-text">No tokens yet.</p></div>
+      </section>
+    </div>
+
+    <div class="editor-right-column">
+      <section id="previewPanel" class="panel preview-panel">
+        <div class="preview-heading-row">
+          <h2>Current display preview</h2>
+          <div class="preview-heading-actions">
+            <label class="switch-row preview-darkness-toggle" for="gmPreviewDarkness">
+              <input id="gmPreviewDarkness" type="checkbox" checked>
+              <span>GM darkness</span>
+            </label>
+            <button id="expandPreviewButton" type="button" aria-pressed="false">Enlarge map</button>
+            <a class="button-link" href="{{ url_for('wallmap') }}" target="_blank">Open wall map</a>
+          </div>
+        </div>
+        <p id="filenameLabel" class="help-text">No image loaded.</p>
+        <p class="help-text">Drag tokens and AOE overlays on the map to reposition them. Use a cone or line end handle to rotate it.</p>
+        <p id="previewPanHint" class="help-text preview-pan-hint" hidden><strong>Magnified GM view:</strong> drag empty map space to pan. Token and AOE changes are still saved normally.</p>
+        <div id="previewStage" class="preview-stage">
+          <div id="previewContent" class="map-content" hidden>
+            <img id="previewImage" class="map-image" alt="">
+            <svg id="previewDarknessLayer" class="darkness-layer" aria-hidden="true"></svg>
+            <div id="previewGridLayer" class="grid-layer" aria-hidden="true"></div>
+            <div id="previewAreaLayer" class="area-layer"></div>
+            <div id="previewTokenLayer" class="token-layer"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel initiative-panel">
+        <div class="panel-heading-row initiative-tracker-heading">
+          <div>
+            <h2>Initiative order</h2>
+            <p class="help-text">Highest to lowest. Tokens without initiative are listed at the bottom but are skipped by the turn controls.</p>
+          </div>
+          <div class="initiative-heading-controls">
+            <label class="switch-row initiative-enforce-switch" for="initiativeEnforced">
+              <input id="initiativeEnforced" type="checkbox">
+              <span>Enforce initiative</span>
+            </label>
+            <div class="initiative-step-controls" aria-label="Initiative turn controls">
+              <button id="initiativePreviousButton" class="initiative-step-button" type="button" title="Previous initiative" aria-label="Previous initiative">↑</button>
+              <span id="activeInitiativeLabel" class="active-initiative-label">Active: -</span>
+              <button id="initiativeNextButton" class="initiative-step-button" type="button" title="Next initiative" aria-label="Next initiative">↓</button>
+            </div>
+            <button id="clearInitiativeButton" class="danger-button" type="button">Clear All Initiative</button>
+          </div>
+        </div>
+        <div id="initiativeList" class="initiative-list"><p class="help-text">No tokens yet.</p></div>
+      </section>
+
+      <section class="panel player-activity-panel">
+        <div>
+          <h2>Player activity</h2>
+          <p class="help-text">Successful player-page connections and player-controlled token moves. Times are shown in this browser's local time.</p>
+        </div>
+        <div class="player-activity-group">
+          <h3>Connections</h3>
+          <div class="player-activity-head" aria-hidden="true">
+            <span>Time</span><span>Player</span><span>IP address</span>
+          </div>
+          <div id="playerConnectionLog" class="player-activity-log"><p class="help-text">No player connections logged yet.</p></div>
+        </div>
+        <div class="player-activity-group">
+          <h3>Player movement</h3>
+          <div class="player-activity-head" aria-hidden="true">
+            <span>Time</span><span>Movement</span><span>IP address</span>
+          </div>
+          <div id="playerMoveLog" class="player-activity-log"><p class="help-text">No player moves logged yet.</p></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<footer class="editor-version" aria-label="Application version">The Scrying Table v{{ app_version }}</footer>
+</body>
+</html>

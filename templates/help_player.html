@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Scrying Table: Player Help</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+</head>
+<body class="editor-page">
+<main class="help-card">
+  <header class="help-header">
+    <div><h1>The Scrying Table: Player Guide</h1></div>
+    <div class="header-actions">
+      <a class="button-link" href="{{ url_for('player_portal') }}">Player login</a>
+      <a class="button-link" href="{{ url_for('home') }}">Home</a>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>Join the game</h2>
+    <p>Open <code>{{ request.host_url.rstrip('/') }}/player</code>, choose the GM session and your character, then enter the shared game password.</p>
+    <p>For a read-only table display, open <code>{{ request.host_url.rstrip('/') }}/viewer</code> and choose the same GM session.</p>
+  </section>
+
+  <section class="panel">
+    <h2>What you can see</h2>
+    <p>Walls and closed doors block line of sight. Open doors can reveal the area beyond them. On dark maps, your GM may also limit vision by distance and use color light or grayscale night vision.</p>
+    <p>If persistent fog is enabled, terrain you have already explored can remain dimly visible after you leave. It does not reveal creatures, effects, doors, initiative details, or movement that you cannot currently see.</p>
+    <p>Token visibility is map-specific. A token hidden by the GM does not contribute vision while hidden. Depending on the game settings, your page may use only your viewpoints or the party's combined vision.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Move a token</h2>
+    <p>Tokens you may move have a larger halo. Drag one with a mouse or finger and release it at the destination. The server checks the route; walls and closed doors block movement.</p>
+    <p>A GM can also delegate an NPC or companion to you. During enforced initiative, movement is limited to the token or tokens allowed for the active turn.</p>
+    <p>On a touch device, use two fingers to pan or pinch-zoom the browser view. This does not change the shared GM map zoom.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Initiative and movement lock</h2>
+    <p>The GM may show initiative numbers inside tokens and highlight the active turn. If movement is locked, the map continues to update but your token cannot be moved until the GM unlocks it.</p>
+  </section>
+
+  <section class="panel">
+    <h2>If the page looks stale</h2>
+    <p>Map changes normally arrive automatically. Refresh the page if needed. A long-running browser session may eventually ask for the shared game password again.</p>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Scrying Table: Version History</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+</head>
+<body class="editor-page">
+<main class="help-card history-card">
+  <header class="help-header">
+    <div>
+      <h1>The Scrying Table: Version History</h1>
+      <p>Release notes and major behavior changes.</p>
+    </div>
+    <div class="header-actions">
+      <a class="button-link" href="{{ url_for('viewer') }}">Viewer</a>
+      <a class="button-link" href="{{ url_for('player_help') }}">Player help</a>
+    </div>
+  </header>
+
+  <p class="history-note">Early releases have shorter notes and omit dates where the original release date was not recorded.</p>
+
+  <h2 class="history-era">Multi-GM sessions</h2>
+
+  <article class="panel history-entry history-current">
+    <div class="history-version"><strong>v1.17.3</strong><span>Activity panel layout correction</span></div>
+    <ul>
+      <li>Restored Connections and Player movement to stacked, full-width sections.</li>
+      <li>Each list remains compact and gets a vertical scrollbar when additional entries are available.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.17.2</strong><span>Compact activity logs and source cleanup</span></div>
+    <ul>
+      <li>Player connection and movement logs in the GM editor now use compact, independently scrollable lists.</li>
+      <li>Cleaned source comments and public documentation to describe the current design rather than carrying implementation history through the code.</li>
+      <li>Added contributor notes and expanded repository ignore rules for local backup and patch artifacts.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.17.1</strong><span>GM player activity audit</span></div>
+    <ul>
+      <li>The GM editor now shows the running application version at the bottom of the page.</li>
+      <li>Added a private <strong>Player activity</strong> panel below Initiative order with recent successful player connections, connection times, and source IP addresses.</li>
+      <li>Added recent player-controlled token movement below the connection log, including the familiar “player moved token” description, time, and source IP address.</li>
+      <li>Connection and movement records use the existing per-GM monthly audit logs; IP addresses are not added to player-facing Recent moves displays.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.17.0</strong><span>Public-project packaging</span></div>
+    <ul>
+      <li>Prepared the source tree for public repository use by removing deployment-specific hostname references and replacing the packaged Nginx site with a generic example.</li>
+      <li>Rewrote README and installation documentation around a clean first-time deployment, with deployment-specific upgrade notes moved to a separate guide.</li>
+      <li>Added a VTT-only <code>manage-gms.sh</code> utility for adding, removing, renaming, listing, and changing passwords for GM accounts without touching credentials for other applications.</li>
+      <li>Added an example environment file, Git/Docker ignore files, and security notes so runtime secrets and persistent game data stay outside the repository.</li>
+      <li>Made the Docker host bind address, host port, upload limit, map limit, session lifetime, and login-throttle settings configurable through <code>.env</code> while preserving the existing defaults.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.16.0</strong><span>Per-map encounter state and map reset</span></div>
+    <ul>
+      <li>Grid visibility, square size, color, and opacity are saved with each map and restored when that map is active.</li>
+      <li>Token visibility is now saved per map. Tokens created after a map was prepared default to hidden when that map is activated for the first time.</li>
+      <li><strong>Show all tokens</strong> is a true select-all control for the active map, and hidden tokens no longer contribute LOS, darkness vision, or remembered explored fog.</li>
+      <li>AOE overlays now have their own <strong>Visible</strong> checkbox, with visibility remembered per map.</li>
+      <li>Added <strong>Reset map</strong> to clear that map's explored fog and hide all tokens/AOEs without deleting walls, doors, or other prepared map data.</li>
+      <li>The active map can now be deleted, and the library can contain zero maps. Deleting the active map clears the live display instead of forcing another map active.</li>
+      <li>State schema v24 migrates v1.15.x by preserving visibility on the currently active map and starting other prepared maps hidden.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.15.7</strong><span>Wider closed-door markers</span></div>
+    <ul>
+      <li>Doubled closed player-visible door markers from 6 px to 12 px so closed doors stand out more clearly on busy maps.</li>
+      <li>Open dashed doors remain at 6 px, preserving a strong visual difference between open and closed states.</li>
+      <li>The existing browser-local closed-door pulse is unchanged and still requires no additional server communication.</li>
+      <li>This is display-only. LOS, fog, geometry, collision, and door state behavior are unchanged.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.15.6</strong><span>Pulsing closed-door markers</span></div>
+    <ul>
+      <li>Added a smooth browser-local opacity pulse to closed player-visible door markers so they stand out better on busy map art.</li>
+      <li>The animation requires no extra server requests, polling, or SSE traffic; it runs entirely in CSS after the door is rendered.</li>
+      <li>Open doors remain static dashed lines so players can distinguish open and closed states at a glance.</li>
+      <li>Browsers using reduced-motion preferences receive a steady higher-opacity closed-door marker instead of animation.</li>
+      <li>This is display-only. LOS, fog, geometry, collision, and door state behavior are unchanged.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.15.5</strong><span>Thicker player door markers</span></div>
+    <ul>
+      <li>Made ordinary player-visible door markers thicker on player and Viewer pages so doors are easier to spot over the map image.</li>
+      <li>Closed doors now use a heavier solid stroke and open doors use a thicker dashed stroke while keeping the same color and opacity controls.</li>
+      <li>This is a display-only change. Wall and door geometry, collision, and LOS behavior are unchanged.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.15.4</strong><span>Persistent explored-area fog</span></div>
+    <ul>
+      <li>Added <strong>Persistent explored-area fog</strong> directly below the player-vision stacking setting.</li>
+      <li>Previously seen terrain remains dimly visible after current line of sight is lost, while never-explored terrain stays black.</li>
+      <li>Exploration is stored per player and per prepared map. Stacked player pages and the Viewer use the party union; unstacked player pages use only that character's remembered terrain.</li>
+      <li>Fog memory applies only to the map image. NPCs, doors, AOEs, initiative details, and recent movement continue to require current server-approved visibility.</li>
+      <li>Turning persistent fog off clears remembered exploration on all prepared maps. Replacing or clearing a map image clears that map's exploration.</li>
+      <li>State schema v23 stores the compact exploration masks and automatically normalizes existing v1.15.3 state.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.15.3</strong><span>Terrain line of sight</span></div>
+    <ul>
+      <li>Normally lit maps now black out map-image regions that are behind walls or closed doors instead of revealing the full dungeon layout.</li>
+      <li>Normal lighting still has unlimited sight distance. Walls, closed doors, and the map boundary shape the visible terrain; <strong>Dark environment</strong> continues to add vision radius and illumination/nightvision rules.</li>
+      <li>Opening a door reveals terrain through the opening immediately; closing it hides terrain beyond the door again unless another approved party viewpoint can still see it.</li>
+      <li>Ordinary doors can now appear to players in normal lighting when the server determines that the door itself is in line of sight. Secret doors remain GM-only.</li>
+      <li>Lit-map AOEs are filtered by the same current LOS rule as NPCs so effects centered inside an unseen room do not reveal activity there.</li>
+      <li>Only server-calculated visibility polygons are sent to public pages; raw wall and secret-door geometry remains private.</li>
+      <li>This is current LOS, not persistent explored-map memory.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.15.2</strong><span>Lit-map line of sight</span></div>
+    <ul>
+      <li>Walls and closed doors now hide non-player NPC tokens that are out of line of sight even when <strong>Dark environment</strong> is off.</li>
+      <li>Normally lit maps remain fully illuminated and have no vision-radius limit; only NPC token visibility is occluded by blocker geometry.</li>
+      <li>Dark environment keeps the existing vision-radius, light, and nightvision behavior. Open doors continue to allow sight.</li>
+      <li>NPC filtering remains server-side so an occluded NPC's data is not sent to player or viewer browsers.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.15.1</strong><span>Switch GM and signed editor sessions</span></div>
+    <ul>
+      <li>Added <strong>Switch GM</strong> to the editor so the current GM can sign out and immediately sign in as another account.</li>
+      <li>Kept GM passwords in the existing Nginx htpasswd file, but moved normal editor/API authorization to a signed Flask session after Nginx validates the login.</li>
+      <li>Added per-GM authentication revisions so password changes can invalidate existing editor sessions immediately.</li>
+      <li>Fixed the GM editor live-update stream to use the signed GM session while public game streams remain scoped to <code>/g/&lt;gm&gt;/events</code>.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.15.0</strong><span>Uniform GM session storage</span></div>
+    <ul>
+      <li>Moved every GM session to the same <code>/data/games/&lt;gm&gt;/</code> storage model, including the <code>gm</code> account.</li>
+      <li>Removed the default-game fallback from public APIs and live updates. Real game traffic is always scoped to <code>/g/&lt;gm&gt;/...</code>.</li>
+      <li>Kept <code>/viewer</code> and <code>/player</code> as session choosers and updated the player/admin guides for the session-first workflow.</li>
+      <li>Added an interactive GM account administrator and a one-time migration helper for the old root <code>gm</code> data.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.14.0</strong><span>Public session choosers</span></div>
+    <ul>
+      <li>Changed the Viewer and Player landing paths into session choosers.</li>
+      <li>Players choose a GM session first, then choose their player name and enter that session's shared password.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.13.0</strong><span>Isolated multi-GM games</span></div>
+    <ul>
+      <li>Added isolated state, maps, tokens, passwords, initiative, AOEs, walls, logs, and SSE streams for multiple GM accounts.</li>
+      <li>Changed GM authentication to the dedicated Scrying Table htpasswd file.</li>
+    </ul>
+  </article>
+
+  <h2 class="history-era">Original map display</h2>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.0.0</strong><span>First working release</span></div>
+    <ul>
+      <li>Started as a simple way to put a battle map on a second screen.</li>
+      <li>Added the public full-screen viewer and password-protected editor.</li>
+      <li>Maps could be uploaded, fitted to the screen, zoomed, cleared, and shown against a selectable background.</li>
+      <li>Changes made in the editor were pushed to the viewer without needing to reload the page.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.0.1</strong><span>Zoom and centering fix</span></div>
+    <ul>
+      <li>Fixed the way enlarged maps were centered in the viewer.</li>
+      <li>Changed zooming so the map surface stays centered and scales cleanly instead of drifting around the page.</li>
+    </ul>
+  </article>
+
+  <h2 class="history-era">VTT basics</h2>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.1.0</strong><span>Player VTT added</span></div>
+    <ul>
+      <li>Added player and GM tokens.</li>
+      <li>Added friendly player URLs such as <code>/vtt?player=korgoth</code> and a shared game password.</li>
+      <li>Players could move their own token while the GM could move everything.</li>
+      <li>Added live token updates, global token sizing, a player movement lock, and player/admin help pages.</li>
+      <li>Clearing the displayed map no longer removed VTT setup or token data.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.2.0</strong><span>Grid overlay</span></div>
+    <ul>
+      <li>Added an optional square grid over the map.</li>
+      <li>Grid size and color became GM controls.</li>
+      <li>The grid scales with the map and stays behind tokens.</li>
+    </ul>
+  </article>
+
+  <h2 class="history-era">Combat tools and editor cleanup</h2>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.0</strong><span>Initiative on tokens</span></div>
+    <ul>
+      <li>Added an optional initiative number to every token.</li>
+      <li>Initiative appears in the center of the token on the GM, player, and public views.</li>
+      <li>Added automatic light/dark initiative text and a Clear All Initiative action.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.1</strong><span>Initiative readability</span></div>
+    <ul><li>Changed light initiative numbers from bright white to a softer beige and adjusted the text shadow for readability.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.2</strong><span>More compact GM editor</span></div>
+    <ul>
+      <li>Reduced editor spacing, field sizes, and panel padding.</li>
+      <li>Started laying token cards out in multiple columns on wider screens.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.3</strong><span>Even denser editor layout</span></div>
+    <ul><li>Made another compactness pass and added three-column token cards on large displays.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.4</strong><span>Initiative order panel</span></div>
+    <ul><li>Added a sorted initiative list below the GM map preview, with unassigned tokens listed at the bottom.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.5</strong><span>Initiative list correction</span></div>
+    <ul><li>Corrected the initiative panel so GM-only monsters and NPCs were clearly included and lower entries were not hidden by the panel height.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.6</strong><span>Removed initiative inner scrolling</span></div>
+    <ul><li>Made the initiative list expand normally so the browser page handles vertical scrolling.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.7</strong><span>Initiative overflow cleanup</span></div>
+    <ul><li>Added extra safeguards against nested scrolling and cache-busted the editor assets.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.8</strong><span>Right-column layout rebuild</span></div>
+    <ul><li>Separated the map preview and initiative order into normal page-flow panels and removed the old sticky/nested-scroll behavior.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.3.9</strong><span>Form sizing cleanup</span></div>
+    <ul><li>Fixed oversized login fields, file pickers, dropdowns, and the grid color control on desktop.</li></ul>
+  </article>
+
+  <h2 class="history-era">Token controls</h2>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.4.0</strong><span>GM token visibility switch</span></div>
+    <ul>
+      <li>Added a single switch to hide all tokens from player/public displays while keeping them visible to the GM.</li>
+      <li>Player movement is blocked while tokens are hidden.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.4.1</strong><span>Clear initiative moved</span></div>
+    <ul><li>Moved Clear All Initiative into the initiative-order panel and added a stronger confirmation before clearing it.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.5.0</strong><span>Delegated token movement</span></div>
+    <ul>
+      <li>Allowed a player to move selected GM-only tokens such as familiars, pets, summons, or mounts.</li>
+      <li>Delegated movement is checked by the server, not just the browser.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry history-fix">
+    <div class="history-version"><strong>v1.5.1</strong><span>Bug fix</span></div>
+    <ul><li>Fixed a v1.5.0 regression that could prevent a player from moving any token, including their own.</li></ul>
+  </article>
+
+  <h2 class="history-era">Area-of-effect tools</h2>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.6.0</strong><span>Circles</span></div>
+    <ul><li>Added draggable translucent circles for spell areas, auras, hazards, and similar effects.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.0</strong><span>Cones</span></div>
+    <ul>
+      <li>Turned the circle feature into a general AOE overlay system.</li>
+      <li>Added cones with grid-square length, adjustable angle, direction, and a drag handle for aiming.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.1</strong><span>Lines</span></div>
+    <ul><li>Added line-shaped AOE overlays with grid-square length, width, and direction.</li></ul>
+  </article>
+
+  <h2 class="history-era">GM layout and mobile use</h2>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.2</strong><span>Two-column GM controls</span></div>
+    <ul><li>Reworked the left-side editor controls into a responsive two-column layout while leaving the token section full width.</li></ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.3</strong><span>Shorter control panels</span></div>
+    <ul>
+      <li>Moved related controls onto shared rows to cut down the editor height.</li>
+      <li>Removed the redundant token-card heading and Copy Link button.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.4</strong><span>Collapsible setup and mobile pinch zoom</span></div>
+    <ul>
+      <li>Put map upload, display controls, grid, and VTT access into a collapsible setup section on the GM page.</li>
+      <li>Enabled two-finger pinch zoom on Android/mobile player and public views.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.5</strong><span>Mobile pan + zoom</span></div>
+    <ul>
+      <li>Added one-finger panning of the zoomed map on mobile when touching the map background.</li>
+      <li>Movable tokens still use one-finger drag, while read-only tokens behave like the map for panning.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.6</strong><span>Version history page</span></div>
+    <ul>
+      <li>Added this page at <code>/changes</code>.</li>
+      <li>Added links to it from the GM editor and help pages.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.7</strong><span>Alphabetical token list</span></div>
+    <ul>
+      <li>Sorted the token edit cards alphabetically on the GM page so a token is quicker to find.</li>
+      <li>This only changes how the cards are displayed; it does not change token IDs, links, movement permissions, or initiative.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.8</strong><span>Button alignment cleanup</span></div>
+    <ul>
+      <li>Fixed the vertical alignment of link-style navigation buttons so they match regular buttons on the editor, help, and version-history pages.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry">
+    <div class="history-version"><strong>v1.7.9</strong><span>Token and initiative cleanup</span></div>
+    <ul>
+      <li>Hidden the Player URL name field for GM-only tokens, since those tokens do not have player VTT links.</li>
+      <li>Changed the initiative-order list to two columns when there is enough screen width, with a single-column fallback on small screens.</li>
+      <li>Fixed the version-history page so the latest releases are actually listed.</li>
+    </ul>
+  </article>
+
+  <article class="panel history-entry history-current">
+    <div class="history-version"><strong>v1.7.10</strong><span>Initiative column ordering</span></div>
+    <ul>
+      <li>Changed the two-column Initiative Order so the highest half runs down the left column and the lower half continues down the right.</li>
+      <li>On small screens the columns stack into the normal highest-to-lowest sequence.</li>
+    </ul>
+  </article>
+
+</main>
+</body>
+</html>

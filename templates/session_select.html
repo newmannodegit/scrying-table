@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Scrying Table - VTT: Choose Session</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+</head>
+<body class="portal-page">
+  <main class="portal-card">
+    <h1>Choose a Session</h1>
+    {% if mode == "viewer" %}
+      <p class="portal-intro">Choose the session your GM is running to open the read-only viewer.</p>
+    {% else %}
+      <p class="portal-intro">Choose the session your GM is running. You will choose your player name on the next page.</p>
+    {% endif %}
+
+    {% if sessions %}
+      <nav class="portal-links" aria-label="Available game sessions">
+        {% for game in sessions %}
+          <a class="portal-link" href="{{ game.viewer_url if mode == 'viewer' else game.player_url }}">
+            <strong>{{ game.label }}</strong>
+            {% if mode == "viewer" %}
+              <span>Open this session's viewer</span>
+            {% else %}
+              <span>Choose your player name</span>
+            {% endif %}
+          </a>
+        {% endfor %}
+      </nav>
+    {% else %}
+      <div class="message error">No game sessions are available yet.</div>
+    {% endif %}
+
+    <div class="portal-footer-links">
+      <a href="/">Home</a>
+      {% if mode == "player" %}<a href="/help/player">Player help</a>{% endif %}
+    </div>
+  </main>
+</body>
+</html>

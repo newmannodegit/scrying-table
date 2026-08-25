@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Scrying Table - VTT Feature Request</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+</head>
+<body class="portal-page">
+  <main class="portal-card feature-request-card">
+    <h1>Feature Request</h1>
+    <p class="portal-intro">Have an idea that would make The Scrying Table - VTT more useful? Send it here.</p>
+    <p class="help-text">Submitted requests and the optional name are visible on the public feature-request list.</p>
+
+    {% if success %}
+      <div class="message">Thanks. Your feature request was saved.</div>
+    {% endif %}
+    {% if error %}
+      <div class="message error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="feature-request-form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+      <label for="requestName">Your name <span class="help-text">(optional)</span></label>
+      <input id="requestName" name="name" type="text" maxlength="{{ max_name_chars }}" value="{{ name }}" autocomplete="name">
+
+      <label for="requestText">Feature request</label>
+      <textarea id="requestText" name="request_text" maxlength="{{ max_request_chars }}" required>{{ request_text }}</textarea>
+
+      <label for="mathAnswer">Human check: What is {{ math_left }} + {{ math_right }}?</label>
+      <input id="mathAnswer" class="feature-request-math" name="math_answer" type="number" inputmode="numeric" required autocomplete="off">
+
+      <div class="feature-request-actions">
+        <button class="primary-button" type="submit">Send request</button>
+        <a class="button-link" href="{{ url_for('home') }}">Back to The Scrying Table - VTT</a>
+      </div>
+    </form>
+
+    <nav class="feature-request-footer-links" aria-label="Feature request links">
+      <a href="{{ url_for('feature_requests') }}">View existing feature requests</a>
+    </nav>
+  </main>
+</body>
+</html>

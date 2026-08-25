@@ -1,0 +1,577 @@
+Version 1.17.3
+- Restored the Player activity panel to the original stacked, full-width layout.
+- Connections and Player movement remain separate sections in their original order.
+- Each activity list now has a short maximum height and its own vertical scrollbar when additional entries are available.
+- No game-state schema or backend behavior changes.
+
+Version 1.17.2
+- Capped the height of the GM Player activity and Player movement lists and added independent vertical scrolling.
+- Cleaned the public source tree and documentation for easier maintenance and repository publication.
+- Removed release-history comments and redundant explanatory comments from runtime source where the code is self-explanatory.
+- Reworked the README, installation, upgrade, security, GM help, and player help documents around the current application instead of its development history.
+- Added CONTRIBUTING.md and expanded Git/Docker ignore rules to exclude patch rejects, backup copies, archives, and local tool caches.
+- Reformatted Docker and Compose files for readability.
+- No game-state schema change; v1.17.1 data is directly compatible.
+
+Version 1.17.1
+- Added the running application version to the bottom of the GM /edit page.
+- Added a GM-only Player activity panel below Initiative order. It lists recent successful player-page connections with timestamp, player name, and source IP address.
+- Added recent player-controlled token movement entries below the connection log, using the familiar “player moved token” wording and including the source IP address.
+- Successful player authentication now writes a CONNECT event to the existing per-GM monthly audit log and wakes the editor SSE stream so an open GM page updates promptly.
+- The runtime image now includes VERSION so the editor reports the exact release that is actually running.
+- No game-state schema change; v1.17.0 and v1.16.0 game data remain compatible.
+
+Version 1.17.0
+- Prepared the project for publication in a public source repository.
+- Removed deployment-specific hostname and certificate-path references from the shipped configuration and documentation.
+- Replaced the site-specific Nginx file with a generic example using placeholders for hostname and certificate paths.
+- Rewrote README.md and INSTALL.md around a clean first-time deployment and moved existing-installation guidance to UPGRADING.md.
+- Added manage-gms.sh, a VTT-only GM administrator for listing, adding, removing, renaming, and changing passwords without touching credentials for other applications.
+- Added .env.example, .gitignore, .dockerignore, SECURITY.md, and configurable Docker bind/port/runtime settings suitable for a public repository.
+- No game-state schema change; v1.16.0 game data remains compatible.
+
+Version 1.16.0
+- Made map grid settings explicitly map-specific. Show grid over the map, grid square size, grid color, and grid opacity are saved with the selected map, and delayed editor saves carry the map id so they cannot spill into a newly activated map.
+- Made token visibility map-specific. Each prepared map remembers which tokens are visible on that encounter, and a token with no visibility record on a map defaults to invisible. This keeps tokens created after map preparation from unexpectedly appearing when an older prepared map is activated.
+- Kept each token's Visible checkbox authoritative for both public rendering and vision. A hidden token is not sent to players/viewers, cannot be moved by a player, contributes no current light or line of sight, and does not contribute its remembered explored-area fog while hidden. If the last applicable player viewpoint is hidden, normally lit terrain also becomes hidden even when the map has no walls.
+- Changed Show all tokens into a true select-all control over the active map's individual Visible checkboxes instead of a separate global visibility layer.
+- Added per-map AOE visibility with a Visible checkbox on every existing AOE overlay. Invisible AOEs remain available to the GM but are not sent to public player/viewer pages.
+- Added Reset map beside Prepare walls in the map library. Reset clears that map's stored exploration/sight history and makes all tokens and AOEs invisible on that map while preserving the map image, grid/display settings, token/AOE definitions and positions, walls, doors, and door states.
+- The map library can now be completely emptied. The active map may be deleted; doing so clears the live map display without automatically activating another prepared map. A later map can be activated normally, and the first map added to an empty library becomes active.
+- Existing v1.15.x sessions preserve current token/AOE visibility on the map that is active during upgrade. Other existing prepared maps begin with all tokens/AOEs hidden because older state did not record map-specific visibility.
+- Existing v1.15.x sessions that had the old Show all tokens switch turned off are migrated safely by marking every token invisible on the active map during state normalization.
+- State schema advanced to v24. No Nginx, account-manager, or manual storage migration is required.
+- Updated the Admin Guide, Player Guide, README, installation notes, and version history.
+
+Version 1.15.7
+- Doubled the rendered width of closed player-visible door markers from 6 px to 12 px so closed doors stand out more clearly.
+- Open dashed door markers remain at 6 px, preserving a strong visual distinction between open and closed doors.
+- The existing browser-local closed-door pulse remains unchanged and requires no additional server communication.
+- This is a display-only change; LOS, fog, door geometry, collision, and server state behavior are unchanged.
+- Updated the README, installation notes, and version history.
+
+Version 1.15.6
+- Added a browser-local pulse animation to closed player-visible door markers so closed doors are easier to notice on busy map art.
+- Closed-door opacity now cycles smoothly between dim and bright without any extra server requests, polling, or SSE traffic.
+- Open doors remain static dashed lines so the open/closed distinction stays obvious.
+- Added a prefers-reduced-motion fallback that disables the pulse and uses a steady higher-opacity closed-door marker instead.
+- This is a display-only change; LOS, fog, door geometry, collision, and server state behavior are unchanged.
+- Updated the README, installation notes, and version history.
+
+Version 1.15.5
+- Increased the player/viewer door marker thickness so ordinary visible doors are easier to spot on the map.
+- Closed-door markers now render with a heavier stroke and open doors use a thicker dashed stroke while keeping the existing color and LOS behavior.
+- This is a display-only change; wall and door geometry, collision, and visibility logic are unchanged.
+- Updated the README, installation notes, and version history.
+
+Version 1.15.4
+- Added a Persistent explored-area fog checkbox directly below Stack player visibility circles on player pages.
+- When enabled, terrain that a player has actually seen remains dimly visible after current line of sight is lost; never-explored terrain remains fully black.
+- Exploration is stored per player token and per prepared map as a compact raster mask. Unstacked player pages receive only that character's explored terrain, stacked player pages receive the party union, and the read-only Viewer always receives the party union.
+- Persistent fog remembers terrain only. NPCs, ordinary doors, AOEs, initiative details, and recent movement continue to require current server-side visibility and are never revealed from exploration history alone.
+- Dark environment keeps its existing radius/light/nightvision behavior; normally lit maps keep unlimited-range LOS clipped by walls and closed doors. Persistent terrain memory works with either lighting mode.
+- Turning Persistent explored-area fog off clears remembered exploration on all prepared maps so re-enabling starts fresh. Replacing or clearing a map image also clears that map's exploration.
+- State schema advanced to v23. Existing v1.15.3 state is normalized automatically; no Nginx, account-manager, or manual data migration is required.
+- Updated the Player Guide, Admin Guide, README, installation notes, and version history.
+
+Version 1.15.3
+- Added current line-of-sight terrain masking on normally lit maps. When walls or closed doors are defined, player and Viewer pages now black out map-image regions that no applicable player viewpoint can currently see.
+- Normal lighting still has unlimited sight distance; the new terrain mask is clipped only by map edges, walls, and closed doors. Dark environment continues to add the existing vision-radius and illumination/nightvision rules.
+- Opening a door removes it from the terrain occlusion calculation immediately; closing it blocks the map beyond that door again on the next live state update.
+- Ordinary player-visible doors can now be shown in normal lighting as well as darkness. Door markers are still server-filtered by LOS, secret doors remain GM-only, and open doors use the existing dashed marker.
+- Lit-map AOE payloads now follow the same wall/door LOS filtering as NPC tokens so an effect centered inside an occluded room does not reveal activity there.
+- Added separate server-approved unlimited-range LOS polygons for player/viewer terrain rendering. Raw wall and secret-door geometry remains excluded from public state.
+- This release uses current LOS only; it does not remember previously explored terrain after the party loses sight of it.
+- No state-schema, Nginx, account-management, or storage migration changes are required.
+- Updated the Player Guide, Admin Guide, README, installation notes, and version history.
+
+Version 1.15.2
+- Walls and closed doors now occlude non-player NPC tokens on normally lit maps as well as in Dark environment.
+- Normal lighting keeps the full map illuminated and applies no vision-radius limit; it now performs an unlimited-range line-of-sight check from the applicable player viewpoints before sending an NPC to viewer/player browsers.
+- Player characters remain visible as before. On individual player pages, the player character is the lit-map viewpoint; party stacking uses all visible player characters. The read-only viewer uses the full party.
+- The existing Vision in darkness switch and Vision radius continue to apply only when Dark environment is enabled.
+- Open doors do not block line of sight. Closed doors and walls use the same server-authoritative blocker geometry already used by darkness and player movement collision.
+- Occluded NPC records are filtered server-side, so their names, positions, initiative information, and movement history are not exposed to that audience.
+- No state-schema, Nginx, account-management, or storage migration changes are required.
+- Updated the Player Guide, Admin Guide, README, and version history for lit-map line-of-sight behavior.
+
+Version 1.15.1
+- Added a Switch GM button to the editor header so a GM can end the current editor session and sign in as another GM without closing the browser.
+- Replaced browser-cached Basic Auth as the editor session mechanism. Nginx still validates credentials against `/etc/nginx/.htpasswd-scrying-gm`, but only on `/auth/gm/check`; Flask then creates the signed GM session used by `/edit`, GM APIs, the Wall Map, and the editor SSE stream.
+- Added a normal GM login page at `/login`. The page sends credentials explicitly only to the Nginx credential-check endpoint and never stores the password.
+- Stripped `Authorization`, `X-RPG-GM-User`, and `X-RPG-GM-Auth` from normal proxied requests so stale Basic Auth credentials and spoofed identity headers do not reach Flask.
+- Added signed short-lived login tickets between the Nginx credential check and Flask session creation.
+- Added per-GM `.auth-revision` support so password changes can immediately invalidate existing signed editor sessions.
+- Updated the companion GM account manager to bump that revision after GM password changes, account creation, and renames.
+- Fixed unscoped `/events` for the GM editor by deriving its game from the signed GM session; public session SSE remains scoped below `/g/<gm>/events`.
+- Updated editor and Wall Map API handling so an expired/revoked GM session returns to the GM login page cleanly.
+- Updated the Admin Guide, README, installation notes, and version history for the new login/switch behavior.
+
+Version 1.15.0
+- Removed the special primary-game storage layout. Every GM now stores all session-specific state under `/data/games/<gm>/`.
+- The `gm` account now uses `/data/games/gm/` exactly like every other GM account.
+- Removed unscoped/default game behavior from game APIs and SSE; public game traffic is always scoped through `/g/<gm>/...`.
+- Kept `/viewer` and `/player` as public session choosers rather than game endpoints.
+- Updated the Player and Admin guides for the session-first workflow and uniform storage model.
+- Removed the old per-purpose GM password helpers in favor of an interactive GM account administrator.
+- Added `migrate-v1.15-game-storage.sh` as a one-time deployment helper to move the existing root `gm` data into `/data/games/gm/`; the running application contains no compatibility fallback after migration.
+- Simplified fresh-install Flask configuration so only `FLASK_SECRET_KEY` is required; Nginx Basic Auth remains the sole GM identity authority.
+- Removed the obsolete unscoped `/events` Nginx location.
+
+Version 1.14.0
+- Changed the public Viewer entry point into a session chooser.
+- Changed the public Player entry point into a session chooser followed by the existing per-session player-name/password page.
+- Public session choices are discovered from existing isolated game state stores, including the primary `gm` session and additional `/data/games/<gm>/` sessions.
+- Public play/view links now use `/g/<gm>/...` for every session, including `gm`; unprefixed `/vtt` redirects to the Player session chooser.
+- No Nginx change is required.
+
+Version 1.13.0
+- Added isolated support for up to six simultaneous GM accounts and parties.
+- Existing `gm` remains the primary game and keeps the legacy public URLs.
+- Additional GM usernames receive public party URLs under `/g/<username>/`.
+- Scoped each game to its own state, map library, player password, tokens, initiative, AOEs, walls/doors, audit logs, lock, and SSE stream.
+- Bound player Flask sessions to the game they authenticated against.
+- Added per-game live-update signaling so one table does not wake or refresh another table.
+- Increased Gunicorn thread capacity from 16 to 96 while retaining one worker for in-process SSE signaling.
+- Changed Map GM Basic Auth to `/etc/nginx/.htpasswd-scrying-gm`.
+- Separated the VTT GM credential store from credentials used by unrelated applications.
+
+THE SCRYING TABLE - VTT CHANGELOG
+=================================
+
+Newest releases are listed first. Early releases did not always have a recorded
+release date, so dates are included only where they were already known.
+
+v1.12.2 - 2026-08-19
+  - Fixed existing AOE cards overflowing the compact /edit left column and extending beneath the Initiative Order panel.
+  - Reworked compact AOE cards into contained rows: Name/Shape/Color, full-width shape settings, then autosave status/Delete actions.
+  - No state-schema, API, Nginx, or AOE behavior changes.
+
+v1.12.1 - 2026-08-18
+  - Restored a GM Grid opacity control in the Grid overlay panel.
+  - Grid opacity is persisted per map alongside grid size and color and applies consistently to the GM preview, Wall Map, player VTT, and public viewer.
+  - Existing maps migrate at 100% opacity so upgrading does not change their current appearance.
+  - Bumped persisted state schema to 22.
+
+v1.12.0 - 2026-08-18
+  - Added a GM-only map library with a default limit of 20 prepared maps.
+  - Migrates the existing single map automatically into the library as the active map, preserving its image, grid, zoom, background, walls, doors, secret-door flags, open/closed states, door color, and opacity.
+  - New map uploads are inactive by default so session preparation does not change the map shown to connected players. On a fresh empty installation, the first uploaded map fills the initial slot and becomes active.
+  - Added compact Map library controls in /edit for Prepare walls, Activate, Rename, and Delete. The active map cannot be deleted until another map is activated.
+  - /edit/wallmap can now open a specific inactive map for wall/door preparation. Inactive map images and full blocker geometry remain behind GM authentication and are not exposed through public VTT state.
+  - Activating a map switches the live image/grid/wall/door configuration in one persisted state update; existing SSE clients receive the new active encounter automatically.
+  - Wall and door collision immediately follows the newly active map because collision continues to use only the active map's blocker geometry.
+  - New map images are stored separately under data/maps/<map-id>/ while the existing data/current-map.* image remains valid for the migrated legacy map.
+  - Bumped persisted state schema to 21. Token definitions, positions, initiative, AOEs, player login settings, and global movement/vision controls remain session-global in this release.
+  - No Nginx change is required: map-management and inactive-image routes live under the already protected /edit namespace, while existing wall/door APIs remain GM-only.
+
+v1.11.13 - 2026-08-18
+  - Added server-enforced player movement collision against GM-defined walls and closed doors.
+  - Player token drags now submit their traveled path so a valid route around a wall corner is accepted instead of being reduced to a straight start-to-finish line.
+  - Collision uses a slightly reduced token footprint, preventing token centers and most of the visible token body from clipping through walls while keeping ordinary doorways usable.
+  - Open doors allow passage immediately; closed ordinary and secret doors block player movement. Collision is active whether or not Dark environment is enabled.
+  - Full blocker geometry remains GM-only. The player receives only a generic Movement is blocked response when a move collides.
+  - GM token movement from /edit and /edit/wallmap remains unrestricted. Rejected player moves do not change persisted coordinates or create MOVE audit entries.
+  - No state-schema or Nginx changes are required.
+
+v1.11.12 - 2026-08-17
+  - Fixed active delegated NPC visibility when initiative enforcement is disabled.
+  - A player-controlled NPC that is the current initiative token is now shown to its controlling player in darkness whether or not Enforce initiative is enabled.
+  - The active NPC visibility exception reveals only that token; it does not grant vision around the NPC unless Share vision with controlling player is enabled.
+  - Initiative enforcement continues to control movement restrictions independently from the active-turn visibility rule.
+
+v1.11.11 - 2026-08-17
+  - When initiative enforcement is enabled, a delegated/player-controlled NPC is now force-visible to its controlling player during that NPC's own initiative turn.
+  - The turn-only visibility exception reveals the NPC token itself, not the surrounding map; normal torch/nightvision still requires the NPC Share vision setting.
+  - Fixed the player move API so the active delegated NPC can be moved on its turn even when darkness places it outside the controlling character's normal vision.
+  - Global token visibility and the NPC's individual Visible setting still take precedence.
+
+v1.11.10 - 2026-08-17
+  - Fixed the Moved by player dropdown so choosing the blank option correctly removes a delegated NPC's controller and moves it to GM-controlled NPCs.
+  - Preserved the existing ability to reassign a delegated NPC directly from one player to another.
+  - Bumped the editor JavaScript cache key so browsers immediately receive the corrected dropdown behavior.
+
+v1.11.9 - 2026-08-17
+  - Renamed the ambiguous Player controlled token checkbox to Player character. Player-controlled NPCs remain NPCs and are identified by their Moved by player assignment.
+  - Added a confirmation before converting a delegated NPC into a player character because that conversion removes its Moved by player assignment.
+  - Clarified the admin help text so player characters and delegated player-controlled NPCs are not confused.
+
+v1.11.8 - 2026-08-17
+  - Reworked delegated NPC token-card layout so Moved by player, Share vision with controlling player, and Reveal in darkness each have a clear row.
+  - Prevented the new shared-vision controls from being squeezed into the controller row on three-column editor layouts.
+  - Kept shared NPC nightvision and vision-radius controls below the delegation options when shared vision is enabled.
+
+v1.11.7 - 2026-08-17
+  - Added optional vision sharing for NPCs assigned under Moved by player. Sharing is disabled by default.
+  - A shared-vision NPC has its own vision radius and light/nightvision type and contributes wall-clipped sight to its controlling player's VTT.
+  - With party vision stacking enabled, shared NPC sight joins the full party union; /viewer always includes all enabled shared NPC vision.
+  - Shared NPC vision participates in server-side token/AOE/door visibility filtering, so the additional viewpoint follows the same privacy and wall rules as player vision.
+  - Added a VISION_SHARE token audit event when the GM enables or disables the setting.
+  - Bumped persisted state schema to 20. Existing NPCs default to vision sharing off.
+
+v1.11.6 - 2026-08-17
+  - Added a status field to public feature requests. New requests are stored with status "active".
+  - Existing feature-request records without a status are treated as active for backward compatibility.
+  - Feature requests are now sorted with active requests first, completed requests second, and newest submissions first within each status.
+  - Added status badges to the public feature-request list.
+  - The JSONL file remains intentionally hand-editable; changing a record from "status": "active" to "status": "completed" is enough to mark it complete.
+
+v1.11.5 - 2026-08-17
+  - Added Delete all walls and doors to the GM Wall Map.
+  - Bulk deletion asks for confirmation including the number of existing blockers and warns that the action cannot be undone.
+  - The server clears the full blocker layout in one locked state write rather than issuing one delete request per segment.
+
+v1.11.4 - 2026-08-17
+  - Added global Door color and Door opacity controls to the GM Wall Map.
+  - The selected appearance applies to all ordinary door cues on the GM Wall Map and on player/viewer pages.
+  - Door appearance is persisted in current_state.json; existing installations migrate to yellow at 72% opacity.
+  - Secret doors remain purple on the GM Wall Map and remain completely absent from public/player state.
+  - Bumped persisted state schema to 19.
+
+v1.11.3 - 2026-08-17
+  - Changed player-facing visible door cues from faint tan to a clearer yellow so doors are easier to distinguish from walls.
+  - Increased the player-facing door cue opacity for both closed and open doors while preserving the existing dashed style for open doors.
+
+v1.11.2 - 2026-08-17
+  - Added faint player-facing door cues when an ordinary door is within an applicable player vision region and has line of sight to the viewer.
+  - Closed visible doors use a faint solid tan line; open visible doors use a faint dashed tan line.
+  - Added a GM-only Visible to players setting for doors on /edit/wallmap. Clear it for secret doors that should continue blocking vision without revealing their location.
+  - Secret/hidden doors are shown purple on the GM wall map so they are easy to distinguish while editing.
+  - Public/player APIs still do not expose the complete wall/door map; they return only ordinary doors currently approved for that view.
+  - Bumped persisted state schema to 18. Existing doors default to Visible to players so current maps preserve ordinary-door behavior.
+
+v1.11.1 - 2026-08-17
+  - Fixed a player-side wall-vision leak while dragging a token.
+  - On maps with active vision blockers, the darkness mask now stays at the last server-approved wall-clipped polygon during a drag.
+  - After the move is committed, the player page immediately reloads authoritative state from Flask instead of relying only on the next SSE refresh.
+  - Wall-free maps retain the existing live circular vision preview while dragging.
+
+v1.11.0 - 2026-08-17
+  - Added GM-drawn vision-blocking walls and doors.
+  - Renamed /edit/bigmap to /edit/wallmap and changed the editor link to Open wall map.
+  - Wall Map tools now support token movement, connected wall drawing, door drawing, selection/deletion, and opening or closing doors.
+  - Closed walls and doors clip torch and nightvision regions and participate in server-side NPC, AOE, delegated-movement, initiative-display, and recent-move visibility decisions.
+  - Public/player APIs receive only the resulting visibility regions; GM wall/door geometry is not exposed to player browsers.
+  - Added schema 17 with persistent normalized vision_blockers state. Existing maps migrate with an empty blocker list.
+  - Updated the packaged Nginx configuration so vision-blocker administration remains behind the shared GM Basic Auth boundary.
+
+v1.10.14 - 2026-08-17
+- Added maintainer comments throughout the HTML templates, JavaScript files, and shared app.css.
+- Comments focus on page structure, state flow, layer ordering, autosave, visibility, movement, and responsive layout decisions.
+- Expanded the fallback editor login template from a single compressed line into normal maintainable HTML.
+- No game-state, API, authentication, or rendering behavior changed in this release.
+
+v1.10.13 - 2026-08-17
+  - Renamed the visible application from Map Display to The Scrying Table - VTT.
+  - Updated page titles, editor/help headings, feature-request pages, README, INSTALL.md, and installer messages to use the new name.
+  - Kept existing URLs, filesystem paths, Docker/container names, Nginx filenames, and service identifiers unchanged.
+
+v1.10.12 - 2026-08-17
+  - Added a public `/feature-requests` page that lists submitted feature requests newest first.
+  - Added a View existing feature requests link at the bottom of the public submission page.
+  - The public list exposes only the optional submitted name, request text, and submission timestamp.
+
+v1.10.11 - 2026-08-17
+  - Reduced Initiative and Vision radius inputs on existing token cards to compact two-digit-width controls with minimal padding.
+  - Moved the Player controlled checkbox beside the token Name field so the top of each token card is easier to scan.
+  - Added a public Feature Request link to the Map Display landing page and a `/feature-request` submission form.
+  - Feature requests accept an optional name, require a simple server-validated addition question, and are stored persistently in `data/feature_requests.jsonl`.
+  - Feature-request records store the UTC submission time, optional name, and request text; source IP addresses are not written to the request file.
+
+v1.10.10 - 2026-08-17
+  - Narrowed Initiative and Vision radius inputs on `/edit` so short numeric values no longer fill an entire grid column.
+  - Reduced the Name input on player token cards to one-third of its previous desktop width. NPC name inputs are unchanged.
+  - Player Name inputs return to full width on narrow/mobile editor layouts for usability.
+
+v1.10.9 - 2026-08-17
+  - Moved player movement, darkness, stacked player vision, Global token size, and Mobile token size controls from VTT access to Display controls on `/edit`.
+  - Removed the `(GM only)` note from the Area of effect overlay name field.
+  - Removed editable Player URL name fields from both Add token and existing player-token cards.
+  - Player VTT keys are now generated automatically from player token names. Names are normalized for URLs and duplicate normalized names receive numeric suffixes.
+  - Migrates older customized player URL keys to name-derived keys and bumps the persisted state schema to version 16.
+  - Simplified delegated-player dropdowns so they show player names without exposing internal URL keys.
+
+v1.10.8 - 2026-08-17
+  - Removed the Save Token button from existing token cards. Token properties now save automatically, with short debouncing for text and number fields and immediate saves for checkboxes and selections.
+  - Removed the Save button from existing area-of-effect cards. AOE names, shapes, colors, and dimensions now save automatically while retaining live GM-preview updates.
+  - Added a small per-card autosave indicator showing Unsaved, Saving..., Saved, or Save failed without adding routine save messages to the page-level status area.
+  - Serialized rapid writes per card so an older, slower save cannot overwrite a newer edit. Pending card edits are flushed before a full editor-state reload.
+  - Preserved AOE rotation-handle behavior by synchronizing the form direction field before pending autosaves are flushed.
+  - Changed the Add token form so Visible is unchecked by default. Existing token visibility is unchanged.
+
+v1.10.7 - 2026-08-17
+  - Removed the generated per-player VTT URL display from token cards in the GM editor; direct /vtt?player=name URLs continue to work.
+  - Removed the player-URL explanatory paragraph from Add token.
+  - Shortened the Grid overlay and Area of effect overlay help text on /edit.
+  - Removed the token-grouping/color/initiative explanatory paragraph from the Tokens section.
+  - Simplified the add-token success message so it no longer repeats the player URL name.
+
+v1.10.6 - 2026-08-17
+  - Changed the Grid square size slider maximum from 25% to 15% of map width.
+  - Changed the Grid square size slider step from 0.5% to 0.25% for finer map-grid alignment.
+  - Updated grid-size display formatting so quarter-percent values such as 3.25% are shown accurately.
+  - Server-side state normalization and settings validation now enforce the same 15% maximum. Existing values above 15% are clamped to 15% when state is normalized.
+  - Includes all v1.10.5 mobile-token-size changes; v1.10.5 does not need to be installed first.
+
+v1.10.5 - 2026-08-17
+  - Added a separate Mobile token size slider directly below Global token size in the GM editor.
+  - Public viewer and player VTT pages use the mobile token size when the browser reports a coarse primary pointer, which targets the finger-selection problem without relying on user-agent strings.
+  - Desktop viewer/player clients and all GM views continue to use Global token size.
+  - Existing state files initialize Mobile token size from their current Global token size so upgrading does not unexpectedly resize tokens on existing mobile clients.
+  - Bumped persisted state schema to version 15.
+
+v1.10.4 - 2026-08-14
+  - Brought CHANGELOG.txt up to date and normalized the release-history format so recent and early releases are kept in one chronological record.
+  - Added useful maintenance comments throughout app.py around state migration, persistence, authentication, audit logging, darkness filtering, initiative enforcement, API boundaries, and SSE updates.
+  - Added INSTALL.md with a fresh Debian 13 (Trixie) deployment procedure covering Docker Engine, Nginx, shared GM Basic Auth, TLS, persistent data, startup, and verification.
+  - Updated the packaged Nginx configuration to the current dedicated GM htpasswd authentication model and included the initiative administration API under the GM-only boundary.
+  - Updated README.md and deployment helper text to match the current release and authentication architecture.
+  - Removed the remaining em dash characters from Map Display UI text and tooltips, using plain hyphens instead.
+
+v1.10.3 - 2026-08-14
+  - Replaced the em dash between the active token name and initiative number in the Current initiative map display with a plain hyphen.
+
+v1.10.2 - 2026-08-14
+  - Fixed responsive token-card layout on `/edit` so the Player URL name label and input remain inside their card instead of overflowing into adjacent space.
+  - Token option fields now automatically reflow to fewer columns as a card narrows, while retaining the compact multi-column layout when space permits.
+
+v1.10.1 - 2026-08-14
+  - Added a compact Current initiative panel above Recent moves on `/viewer` and player `/vtt` pages whenever initiative enforcement is enabled.
+  - Visible active tokens show their name and initiative number. Active tokens hidden by that page's normal visibility rules are reported only as `Hidden token` to avoid leaking hidden NPC information.
+  - The Current initiative panel disappears automatically when initiative enforcement is disabled.
+
+v1.10.0 - 2026-08-14
+  - Added optional GM-controlled initiative enforcement for player movement.
+  - Added previous/next turn arrows and an active-turn indicator/highlight in the /edit Initiative order panel.
+  - Only tokens with assigned initiative participate in turn stepping; the controls wrap at either end.
+  - During a player character's active turn, that player may move their character and all NPCs delegated to them.
+  - During a delegated NPC's active turn, its controlling player may move that NPC only.
+  - During another player's turn or a GM-only NPC's turn, the player cannot move tokens; GM movement remains unrestricted at all times.
+  - Clearing all initiative disables enforcement to avoid leaving player movement unintentionally locked.
+  - Bumped persisted state schema to version 14. Existing installs default initiative enforcement to off.
+
+v1.9.9 - 2026-08-14
+  - Added a small live Recent moves overlay to the public viewer and player VTT pages.
+  - Shows the newest two token MOVE events with local browser time, actor, and token name.
+  - Recent-move entries are filtered through each page's existing token visibility rules so hidden NPC movement is not disclosed.
+  - Uses the persistent monthly token audit logs, so recent movement history survives container restarts.
+
+v1.9.8
+  - Added support for a trusted Nginx GM authentication boundary in front of the application.
+  - The GM editor accepts the trusted X-RPG-GM-User header supplied only by authenticated Nginx locations, avoiding a second application-password prompt.
+  - Removed the Map editor Sign out button because HTTP Basic Auth is browser-managed rather than an application session that can be reliably signed out in-page.
+  - Public viewer/player routes remain public and keep their existing player shared-password behavior.
+
+v1.9.7
+  - Removed the NPC-only Reveal in darkness (1 ft) control from player token cards on /edit.
+  - Player-controlled NPC cards now use a strong green outer border.
+  - GM-controlled NPC cards now use a strong orange outer border.
+  - Returned all token-card backgrounds to the same dark background so token type is conveyed by the border rather than subtle background shades.
+
+v1.9.6
+  - Fixed player/viewer darkness filtering so NPC self-reveal is completely separate from player vision.
+  - An NPC with Reveal in darkness now opens only its own 1-foot visual hole and can never reveal neighboring NPCs, AOEs, or expand delegated movement visibility.
+  - NPCs with Reveal in darkness unchecked are sent to a player only when their token center is inside that player's applicable player-vision area.
+  - Retains the stronger token-card category colors introduced for the pending v1.9.5 work.
+
+v1.9.5
+  - Fixed GM darkness previews so NPC tokens outside player vision are hidden when GM darkness is enabled.
+  - Reveal in darkness now explicitly reveals only that NPC; its one-foot opening cannot reveal neighboring NPC tokens.
+  - Increased the visual contrast between Player, Player-controlled NPC, and GM-controlled NPC cards on /edit.
+
+v1.9.4
+  - Fixed darkness filtering for delegated NPCs: being movable by a player no longer makes that NPC automatically visible outside the player's vision. Only the player's own character token is force-included so the player cannot strand themselves.
+  - Added /edit/bigmap, a dedicated full-window GM map workspace for moving tokens in a separate browser tab/window.
+  - The big map shows all GM tokens (including hidden tokens in a dimmed/dashed style), the grid, AOE overlays, and the darkness/vision layer for context.
+  - Added a local GM darkness toggle to the big-map workspace.
+  - Added an Open big map link beside Enlarge map on /edit.
+  - Editor login now preserves /edit/bigmap as the requested destination when authentication is required.
+
+v1.9.3
+  - Grouped /edit token cards into Players, Player-controlled NPCs, and GM-controlled NPCs, with alphabetical sorting inside each group.
+  - Added progressively lighter token-card backgrounds for delegated NPCs and GM-controlled NPCs to make token types easier to scan.
+  - Changed player vision-radius controls and persisted vision data from grid squares to feet, using 5 feet per map grid square. Existing square-based vision radii migrate at the same physical size.
+  - Added Reveal in darkness (1 ft) to NPC tokens. A revealed NPC is visible on player/viewer displays in darkness with a tiny one-foot color opening, without becoming a normal player vision source.
+  - Added DARK_REVEAL entries to the lightweight token audit log when the GM changes that NPC setting.
+  - Bumped the persisted state schema to version 13.
+
+v1.9.2
+  - Added per-player vision type for dark environments.
+  - Vision-enabled player tokens default to light/torch vision, which reveals the map in full color.
+  - A Nightvision (grayscale) checkbox changes that token's visible area to monochrome.
+  - Personal player vision, stacked party vision, /viewer, and the GM darkness preview all honor the vision type.
+  - Where torch/light and nightvision circles overlap, torch/light takes precedence and the overlap is shown in full color.
+  - Bumped the persisted state schema to version 12. Existing tokens default to light/color vision so upgrading preserves the v1.9.1 appearance.
+
+v1.9.1
+  - Added a local GM darkness toggle beside Enlarge map on /edit.
+  - Turning GM darkness off reveals the full map in the GM preview without changing the shared dark-environment setting or any player/viewer display.
+  - The toggle defaults on and is intentionally not persisted; reloading /edit restores the normal darkness preview.
+
+v1.9.0
+  - Added optional dark-environment play with solid-black fog outside player visibility.
+  - Added per-player-token Vision in darkness and vision-radius controls measured in grid squares.
+  - Added a GM setting to stack all player visibility circles on individual player pages; when off, each player sees only their own visibility circle.
+  - The read-only /viewer always shows the combined visibility of all vision-enabled player tokens.
+  - The darkness layer is rendered above the map image and below the grid, leaving the grid visible over unexplored darkness.
+  - In dark mode, player/viewer state filters ordinary tokens and AOE overlays outside the applicable visibility circles. Player-movable tokens remain available to their owner.
+  - Bumped the persisted state schema to version 11. Existing installs default to dark mode off and vision disabled, so upgrading does not change the current display until the GM enables it.
+
+v1.8.1
+  - Added lightweight server-side token audit logging under data/logs/.
+  - Logs successful token MOVE, ADD, DELETE, VISIBILITY, and DELEGATE events.
+  - Player moves record the authenticated player name and source IP; GM actions record the source IP.
+  - Movement entries record the token ID plus before/after normalized coordinates.
+  - Audit files are monthly (token-events-YYYY-MM.log) and are not included in release ZIPs.
+  - Audit logging never records passwords, session cookies, or intermediate pointer movement.
+
+v1.8.0
+  - Moved the read-only map viewer from / to /viewer.
+  - Added a new landing page at / with links to Viewer, GM Editor, and Player.
+  - Added /player, where players choose a player-controlled token from a dropdown and enter the shared game password.
+  - Kept direct /vtt?player=name links working for existing bookmarks and player links.
+  - Added per-token visibility so the GM can hide individual tokens from player/viewer displays without deleting them.
+  - Moved the master Show all tokens control into the Tokens heading on /edit.
+  - Increased the halo around tokens a player is allowed to move.
+  - Bumped the persisted state schema to version 10; existing tokens default to visible during migration.
+
+v1.7.15
+  - Reworked the enlarged GM map preview after the v1.7.14 map-disappearing failure.
+  - Expanded mode now gives the preview stage a real viewport height instead of relying on a zero-height flex basis.
+  - The enlarged map is rendered at actual 2x-or-greater dimensions rather than being magnified only with a CSS scale transform.
+  - Empty-map drag still pans the enlarged GM workspace; token and AOE editing remains unchanged.
+
+v1.7.14 - True magnified GM workspace
+  - Reworked Enlarge map after the earlier expanded-panel changes did not make the map meaningfully larger in practice.
+  - Expanded mode now starts at 2x the best-fit map size, independent of the player/viewer display zoom.
+  - Drag empty map space to pan around the magnified GM workspace while tokens and AOE overlays keep their normal editing behavior.
+  - Restore editor or Escape returns to the normal preview without changing player/viewer zoom.
+
+v1.7.13 - Enlarged GM preview scaling fix
+  - Fixed Enlarge map so the map itself grows with the expanded editing workspace.
+  - Expanded mode may upscale the map beyond its native pixel size for easier token and AOE placement.
+  - The normal GM preview still avoids upscaling and player/viewer zoom is unchanged.
+
+v1.7.12 - Enlarged GM map preview
+  - Added an Enlarge map button to the Current display preview on /edit.
+  - Expanded mode gives the GM nearly the full browser window for precise token and AOE placement without changing the shared player/viewer zoom.
+  - Restore editor returns to the normal layout; Escape also exits expanded mode.
+
+v1.7.11 - Version history moved to file
+  - Removed the public /changes page and all Version history navigation links.
+  - Moved the project version history into this CHANGELOG.txt file in the project root.
+  - Removed the now-unused version-history template and CSS.
+
+v1.7.10 - Initiative column ordering
+  - Changed the two-column Initiative Order so the highest half runs down the left column and the lower half continues down the right.
+  - On small screens the columns stack into the normal highest-to-lowest sequence.
+
+v1.7.9 - Token and initiative cleanup
+  - Hidden the Player URL name field for GM-only tokens, since those tokens do not have player VTT links.
+  - Changed the initiative-order list to two columns when there is enough screen width, with a single-column fallback on small screens.
+  - Fixed the version-history page so the latest releases are actually listed.
+
+v1.7.8 - Button alignment cleanup
+  - Fixed the vertical alignment of link-style navigation buttons so they match regular buttons on the editor, help, and version-history pages.
+
+v1.7.7 - Alphabetical token list
+  - Sorted the token edit cards alphabetically on the GM page so a token is quicker to find.
+  - This only changes how the cards are displayed; it does not change token IDs, links, movement permissions, or initiative.
+
+v1.7.6 - Version history page
+  - Added this page at /changes.
+  - Added links to it from the GM editor and help pages.
+
+v1.7.5 - Mobile pan + zoom
+  - Added one-finger panning of the zoomed map on mobile when touching the map background.
+  - Movable tokens still use one-finger drag, while read-only tokens behave like the map for panning.
+
+v1.7.4 - Collapsible setup and mobile pinch zoom
+  - Put map upload, display controls, grid, and VTT access into a collapsible setup section on the GM page.
+  - Enabled two-finger pinch zoom on Android/mobile player and public views.
+
+v1.7.3 - Shorter control panels
+  - Moved related controls onto shared rows to cut down the editor height.
+  - Removed the redundant token-card heading and Copy Link button.
+
+v1.7.2 - Two-column GM controls
+  - Reworked the left-side editor controls into a responsive two-column layout while leaving the token section full width.
+
+v1.7.1 - Lines
+  - Added line-shaped AOE overlays with grid-square length, width, and direction.
+
+v1.7.0 - Cones
+  - Turned the circle feature into a general AOE overlay system.
+  - Added cones with grid-square length, adjustable angle, direction, and a drag handle for aiming.
+
+v1.6.0 - Circles
+  - Added draggable translucent circles for spell areas, auras, hazards, and similar effects.
+
+v1.5.1 - Bug fix
+  - Fixed the v1.5.0 mistake that could prevent a player from moving any token, including their own.
+
+v1.5.0 - Delegated token movement
+  - Allowed a player to move selected GM-only tokens such as familiars, pets, summons, or mounts.
+  - Delegated movement is checked by the server, not just the browser.
+
+v1.4.1 - Clear initiative moved
+  - Moved Clear All Initiative into the initiative-order panel and added a stronger confirmation before clearing it.
+
+v1.4.0 - GM token visibility switch
+  - Added a single switch to hide all tokens from player/public displays while keeping them visible to the GM.
+  - Player movement is blocked while tokens are hidden.
+
+v1.3.9 - Form sizing cleanup
+  - Fixed oversized login fields, file pickers, dropdowns, and the grid color control on desktop.
+
+v1.3.8 - Right-column layout rebuild
+  - Separated the map preview and initiative order into normal page-flow panels and removed the old sticky/nested-scroll behavior.
+
+v1.3.7 - Initiative overflow cleanup
+  - Added extra safeguards against nested scrolling and cache-busted the editor assets.
+
+v1.3.6 - Removed initiative inner scrolling
+  - Made the initiative list expand normally so the browser page handles vertical scrolling.
+
+v1.3.5 - Initiative list correction
+  - Corrected the initiative panel so GM-only monsters and NPCs were clearly included and lower entries were not hidden by the panel height.
+
+v1.3.4 - Initiative order panel
+  - Added a sorted initiative list below the GM map preview, with unassigned tokens listed at the bottom.
+
+v1.3.3 - Even denser editor layout
+  - Made another compactness pass and added three-column token cards on large displays.
+
+v1.3.2 - More compact GM editor
+  - Reduced editor spacing, field sizes, and panel padding.
+  - Started laying token cards out in multiple columns on wider screens.
+
+v1.3.1 - Initiative readability
+  - Changed light initiative numbers from bright white to a softer beige and adjusted the text shadow for readability.
+
+v1.3.0 - Initiative on tokens
+  - Added an optional initiative number to every token.
+  - Initiative appears in the center of the token on the GM, player, and public views.
+  - Added automatic light/dark initiative text and a Clear All Initiative action.
+
+v1.2.0 - Grid overlay
+  - Added an optional square grid over the map.
+  - Grid size and color became GM controls.
+  - The grid scales with the map and stays behind tokens.
+
+v1.1.0 - Player VTT added
+  - Added player and GM tokens.
+  - Added friendly player URLs such as /vtt?player=korgoth and a shared game password.
+  - Players could move their own token while the GM could move everything.
+  - Added live token updates, global token sizing, a player movement lock, and player/admin help pages.
+  - Clearing the displayed map no longer removed VTT setup or token data.
+
+v1.0.1 - Zoom and centering fix
+  - Fixed the way enlarged maps were centered in the viewer.
+  - Changed zooming so the map surface stays centered and scales cleanly instead of drifting around the page.
+
+v1.0.0 - First working release
+  - Started as a simple way to put a battle map on a second screen.
+  - Added the public full-screen viewer and password-protected editor.
+  - Maps could be uploaded, fitted to the screen, zoomed, cleared, and shown against a selectable background.
+  - Changes made in the editor were pushed to the viewer without needing to reload the page.

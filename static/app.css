@@ -1,0 +1,2250 @@
+/* Shared layout and UI styles.  The file is ordered from public map surfaces through GM tools and responsive overrides. */
+
+:root {
+  color-scheme: dark;
+  font-family: Arial, sans-serif;
+  background: #10161f;
+  color: #f3f6fa;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+button, input, select { font: inherit; }
+
+/* Full-screen map surfaces */
+.viewer-page,
+.vtt-page,
+.map-stage {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #000;
+}
+
+.viewer-page { cursor: none; }
+.vtt-page { margin: 0; background: #000; }
+.map-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  touch-action: none;
+}
+
+
+/* Let the browser handle map pan/pinch; movable tokens keep pointer control while dragging. */
+.viewer-page .map-stage,
+.vtt-page .map-stage,
+.viewer-page .map-token,
+/* Token size comes from the rendered map width in JavaScript. */
+.vtt-page .map-token {
+  touch-action: pan-x pan-y pinch-zoom;
+}
+.vtt-page .map-token.draggable-token {
+  touch-action: none;
+}
+
+/* All map overlays share this coordinate box. */
+.map-content {
+  position: relative;
+  flex: none;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.map-content[hidden] { display: none; }
+.map-image {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* Terrain visibility sits above the image and below map annotations. */
+.darkness-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.darkness-layer[hidden] { display: none; }
+
+/* Public door markers contain only server-approved visible doors. */
+.public-door-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.public-door-layer[hidden] { display: none; }
+.public-door-line {
+  fill: none;
+  stroke: #ffd54d;
+  stroke-width: 6;
+  opacity: .72;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.public-door-line:not(.public-door-open) {
+  stroke-width: 12;
+  animation: public-door-pulse 1.9s ease-in-out infinite;
+}
+.public-door-open {
+  stroke-dasharray: 12 8;
+}
+@keyframes public-door-pulse {
+  0%, 100% { opacity: .42; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .public-door-line:not(.public-door-open) {
+    animation: none;
+    opacity: .82;
+  }
+}
+
+.grid-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--grid-color, #ffffff) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color, #ffffff) 1px, transparent 1px);
+  background-size: var(--grid-cell, 50px) var(--grid-cell, 50px);
+  background-position: 0 0;
+}
+
+.grid-layer[hidden] { display: none; }
+
+.area-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.map-area {
+  position: absolute;
+  pointer-events: none;
+  touch-action: none;
+  user-select: none;
+}
+
+.map-circle {
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--area-color, #e53935);
+  border-radius: 50%;
+  background: rgba(229,57,53,.28);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+}
+
+.map-cone,
+.map-line {
+  transform-origin: 0 50%;
+  overflow: visible;
+}
+.cone-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.cone-polygon { pointer-events: none; }
+.line-shape {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--area-color, #e53935);
+  border-radius: 3px;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
+}
+
+.map-circle.admin-area {
+  pointer-events: auto;
+  cursor: grab;
+}
+.map-circle.admin-area.dragging {
+  cursor: grabbing;
+  border-width: 3px;
+}
+.map-cone.admin-area,
+.map-line.admin-area { pointer-events: none; }
+.map-cone.admin-area .cone-polygon,
+.map-line.admin-area .line-shape {
+  pointer-events: all;
+  cursor: grab;
+}
+.map-cone.admin-area.dragging .cone-polygon,
+.map-line.admin-area.dragging .line-shape { cursor: grabbing; }
+.map-cone.admin-area.rotating .cone-rotation-handle,
+.map-line.admin-area.rotating .cone-rotation-handle { cursor: grabbing; }
+
+.cone-origin-marker,
+.cone-rotation-handle {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: var(--area-color, #e53935);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.85);
+  transform: translate(-50%, -50%);
+}
+.cone-origin-marker {
+  left: 0;
+  pointer-events: none;
+}
+.cone-rotation-handle {
+  left: 100%;
+  width: 12px;
+  height: 12px;
+  pointer-events: auto;
+  cursor: grab;
+}
+
+
+.token-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.map-token {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(255,255,255,.9);
+  border-radius: 50%;
+  box-shadow: 0 1px 5px rgba(0,0,0,.9);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.token-initiative {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.token-initiative.initiative-light-text {
+  color: #e6dcc2;
+  text-shadow: -1px -1px 0 rgba(45, 35, 20, .95), 1px -1px 0 rgba(45, 35, 20, .95), -1px 1px 0 rgba(45, 35, 20, .95), 1px 1px 0 rgba(45, 35, 20, .95);
+}
+.token-initiative.initiative-dark-text {
+  color: #000;
+  text-shadow: -1px -1px 0 rgba(255,255,255,.8), 1px -1px 0 rgba(255,255,255,.8), -1px 1px 0 rgba(255,255,255,.8), 1px 1px 0 rgba(255,255,255,.8);
+}
+
+.readonly-token { pointer-events: none; }
+.draggable-token { cursor: grab; }
+.draggable-token.dragging { cursor: grabbing; z-index: 10; }
+.admin-token { outline: 1px solid rgba(0,0,0,.65); }
+.own-token {
+  border-width: 3px;
+  box-shadow: 0 0 0 2px #fff, 0 2px 8px rgba(0,0,0,.95);
+}
+
+.token-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  transform: translateX(-50%);
+  max-width: 180px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(0,0,0,.78);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
+/* Keep player controls out of the way of the map. */
+.vtt-toolbar {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  max-width: calc(100vw - 16px);
+  padding: .45rem .6rem;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: .5rem;
+  background: rgba(8,12,18,.84);
+  color: #fff;
+  font-size: .9rem;
+  backdrop-filter: blur(4px);
+}
+.vtt-toolbar form { margin: 0; }
+.vtt-toolbar a { color: #fff; }
+.toolbar-button {
+  min-height: auto;
+  padding: .25rem .45rem;
+  border-radius: .35rem;
+}
+.movement-status { color: #9fe1ae; }
+.movement-status.locked { color: #ffb0b0; }
+
+/* GM pages use normal document scrolling. */
+.editor-page {
+  padding: 1rem;
+  background: #10161f;
+  color: #f3f6fa;
+}
+.editor-card { width: min(1400px, 100%); margin: auto; }
+.help-card { width: min(900px, 100%); margin: auto; }
+.narrow-card { width: min(480px,100%); padding-top: 8vh; }
+.editor-header,
+.help-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.editor-header h1,
+.help-header h1 { margin: 0; }
+.editor-header p,
+.help-header p,
+.help-text { color: #b9c4d0; }
+.header-actions,
+.control-row,
+.button-row {
+  display: flex;
+  gap: .7rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.header-actions form { margin: 0; }
+/* Editor: controls on the left, live map and encounter status on the right. */
+.editor-grid {
+  display: grid;
+  grid-template-columns: minmax(430px, .9fr) minmax(520px, 1.1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.editor-left-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+/* Panels are shared by the editor and supporting pages. */
+.editor-left-column > .panel {
+  margin: 0;
+  min-width: 0;
+}
+.editor-setup-collapse,
+.editor-action-grid {
+  min-width: 0;
+}
+.editor-setup-grid,
+.editor-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+.editor-setup-grid > .panel,
+.editor-action-grid > .panel {
+  margin: 0;
+  min-width: 0;
+}
+.editor-setup-collapse > summary {
+  cursor: pointer;
+  user-select: none;
+  list-style-position: inside;
+  border: 1px solid #344358;
+  border-radius: .65rem;
+  background: #182231;
+  padding: .7rem 1rem;
+  font-weight: 700;
+}
+.editor-setup-collapse[open] > summary {
+  margin-bottom: 1rem;
+}
+.setup-summary-help {
+  margin-left: .5rem;
+  color: #b9c4d0;
+  font-size: .8em;
+  font-weight: 400;
+}
+.preview-panel {
+  position: static;
+}
+.preview-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.preview-heading-row h2 {
+  margin-bottom: 0;
+}
+.preview-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .55rem;
+  flex-wrap: wrap;
+}
+.preview-heading-actions .switch-row {
+  margin: 0;
+  white-space: nowrap;
+}
+body.preview-expanded-open {
+  overflow: hidden;
+}
+.editor-page .preview-panel.preview-expanded {
+  position: fixed;
+  inset: .35rem;
+  height: calc(100dvh - .7rem);
+  box-sizing: border-box;
+  z-index: 1000;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  border-color: #60728a;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,.72);
+}
+.editor-page .preview-panel.preview-expanded .preview-stage {
+  flex: 1 1 auto;
+  width: 100%;
+  height: auto;
+  min-height: 12rem;
+  max-height: none;
+  cursor: grab;
+}
+.editor-page .preview-panel.preview-expanded .preview-stage.panning {
+  cursor: grabbing;
+}
+.panel {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #344358;
+  border-radius: .65rem;
+  background: #182231;
+}
+.panel h2 { margin-top: 0; }
+.panel hr { border: 0; border-top: 1px solid #344358; margin: 1rem 0; }
+label { display: block; margin: .55rem 0 .35rem; font-weight: 700; }
+input[type=password],
+input[type=file],
+input[type=text],
+input[type=number],
+select {
+  width: 100%;
+  padding: .7rem;
+  background: #0d141e;
+  color: #fff;
+  border: 1px solid #52647a;
+  border-radius: .45rem;
+}
+input[type=color] {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .2rem;
+  background: #0d141e;
+  border: 1px solid #52647a;
+  border-radius: .45rem;
+}
+input[type=range] { flex: 1 1 260px; }
+input:disabled { opacity: .55; }
+button,
+.button-link {
+  min-height: 2.7rem;
+  padding: .65rem 1rem;
+  border: 1px solid #60728a;
+  border-radius: .45rem;
+  background: #243247;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+button:hover,
+.button-link:hover { filter: brightness(1.12); }
+.primary-button { background: #dfe8f4; color: #10161f; font-weight: 700; }
+.danger-button { background: #542b30; }
+.preview-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  height: min(72vh, 760px);
+  overflow: hidden;
+  border: 1px solid #344358;
+  border-radius: .45rem;
+  background: #000;
+  touch-action: none;
+}
+.message {
+  margin: .75rem 0;
+  padding: .75rem;
+  border: 1px solid #60728a;
+  border-radius: .45rem;
+  background: #182231;
+}
+.message.error { background: #542b30; }
+.message.success { background: #244b37; }
+a { color: #fff; }
+code {
+  overflow-wrap: anywhere;
+  color: #dce8f6;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: .75rem;
+  align-items: end;
+}
+.switch-row {
+  display: flex;
+  gap: .55rem;
+  align-items: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+.switch-row input { margin: 0; }
+.panel-heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: .75rem;
+  margin-bottom: .75rem;
+}
+.panel-heading-row h2 { margin-bottom: .2rem; }
+.panel-heading-row p { margin: 0; }
+.panel-heading-row button { flex: 0 0 auto; }
+.initiative-input { max-width: 10rem; }
+
+.area-form-grid {
+  display: grid;
+  grid-template-columns: minmax(150px,1fr) 110px 90px;
+  gap: .55rem;
+  align-items: end;
+}
+.area-shape-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: .55rem;
+  margin: .45rem 0;
+}
+.area-shape-settings[hidden],
+.area-inline-settings[hidden] { display: none; }
+.area-size-input {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+}
+.area-size-input input { width: 5.5rem; }
+.area-size-input span { white-space: nowrap; }
+.area-list {
+  display: grid;
+  gap: .5rem;
+  margin-top: .65rem;
+}
+.area-card {
+  display: grid;
+  grid-template-columns: minmax(110px,1fr) 82px 58px minmax(230px,1.5fr) auto;
+  gap: .45rem;
+  align-items: end;
+  padding: .55rem;
+  border: 1px solid #405168;
+  border-radius: .45rem;
+  background: #111a26;
+}
+.area-card-settings { min-width: 0; }
+.area-inline-settings { min-width: 0; }
+.area-card .area-diameter-row {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+.area-card input[type=range] { flex: 1 1 90px; min-width: 70px; }
+.area-card output { min-width: 3rem; text-align: right; }
+.cone-inline-settings {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(62px,1fr));
+  gap: .35rem;
+}
+.area-mini-field { min-width: 0; }
+.area-mini-field .area-size-input input { width: 4.4rem; }
+.area-card-actions { display: flex; gap: .3rem; align-items: center; }
+
+
+/* Responsive token cards */
+.token-list {
+  display: grid;
+  gap: .75rem;
+}
+.token-card {
+  padding: .8rem;
+  border: 1px solid #405168;
+  border-radius: .55rem;
+  background: #111a26;
+}
+.token-card-top {
+  display: flex;
+  gap: .55rem;
+  align-items: center;
+  margin-bottom: .25rem;
+}
+.token-color-dot {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid #fff;
+  border-radius: 50%;
+}
+.player-url-row {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  margin-top: .55rem;
+  padding: .55rem;
+  border-radius: .4rem;
+  background: #0d141e;
+}
+.player-url-row code { flex: 1; }
+.player-url-row button { min-height: 2.2rem; padding: .35rem .55rem; }
+.delegate-control-row { margin-top: .35rem; }
+.delegate-control-row select { width: min(100%, 20rem); }
+.token-actions { margin-top: .75rem; }
+.help-card ul { line-height: 1.6; }
+.initiative-tracker-heading .help-text {
+  margin: 0 0 .45rem;
+}
+/* Initiative list */
+.initiative-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .35rem;
+  padding-right: 0;
+}
+.initiative-column {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .35rem;
+  align-content: start;
+  min-width: 0;
+}
+.initiative-row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0,1fr);
+  gap: .45rem;
+  align-items: center;
+  padding: .35rem .45rem;
+  border: 1px solid #405168;
+  border-radius: .4rem;
+  background: #111a26;
+}
+.initiative-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.85rem;
+  padding: .2rem .35rem;
+  border: 1px solid #52647a;
+  border-radius: .35rem;
+  background: #243247;
+  color: #f3f6fa;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.initiative-badge-empty {
+  color: #b9c4d0;
+  background: #1a2432;
+}
+.initiative-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+}
+.initiative-token-dot {
+  flex: 0 0 auto;
+}
+.initiative-token-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+/* Collapse the editor before the control column becomes cramped. */
+@media (max-width: 1000px) {
+  .editor-grid { grid-template-columns: 1fr; }
+  .preview-panel { position: static; }
+}
+@media (max-width: 700px) {
+  .editor-header,
+  .help-header { flex-direction: column; }
+  .form-grid { grid-template-columns: 1fr; }
+  .panel-heading-row { flex-direction: column; }
+  .vtt-toolbar { left: 8px; right: 8px; justify-content: center; flex-wrap: wrap; }
+}
+
+
+/* Compact editor controls */
+.editor-page {
+  padding: .45rem;
+  font-size: 14px;
+  line-height: 1.25;
+}
+.editor-page .editor-card { width: min(1800px, 100%); }
+.editor-page .editor-header {
+  gap: .55rem;
+  align-items: center;
+  margin-bottom: .25rem;
+}
+.editor-page .editor-header h1 { font-size: 1.45rem; }
+.editor-page .editor-header p {
+  margin: .15rem 0 .25rem;
+  font-size: .8rem;
+}
+.editor-page .header-actions,
+.editor-page .control-row,
+.editor-page .button-row { gap: .4rem; }
+.editor-page .editor-grid {
+  grid-template-columns: minmax(540px, 1.08fr) minmax(520px, .92fr);
+  gap: .55rem;
+}
+.editor-page .panel {
+  margin: .5rem 0;
+  padding: .6rem;
+  border-radius: .45rem;
+}
+.editor-page .panel h2 {
+  margin: 0 0 .4rem;
+  font-size: 1.05rem;
+}
+.editor-page .panel h3 {
+  margin: .35rem 0 .25rem;
+  font-size: .9rem;
+}
+.editor-page .panel hr { margin: .55rem 0; }
+.editor-page label {
+  margin: .3rem 0 .15rem;
+  font-size: .82rem;
+}
+.editor-page .help-text {
+  margin-top: .2rem;
+  margin-bottom: .3rem;
+  font-size: .76rem;
+  line-height: 1.2;
+}
+.editor-page input[type=password],
+.editor-page input[type=file],
+.editor-page input[type=text],
+.editor-page input[type=number],
+.editor-page select {
+  min-height: 2rem;
+  padding: .35rem .45rem;
+  border-radius: .35rem;
+}
+.editor-page input[type=color] {
+  min-height: 2rem;
+  height: 2rem;
+  padding: .12rem;
+  border-radius: .35rem;
+}
+.editor-page input[type=range] { flex-basis: 180px; }
+.editor-page button,
+.editor-page .button-link {
+  min-height: 2rem;
+  padding: .35rem .6rem;
+  border-radius: .35rem;
+  font-size: .84rem;
+}
+.editor-page .message {
+  margin: .35rem 0;
+  padding: .45rem .55rem;
+}
+.editor-page .form-grid {
+  grid-template-columns: minmax(0,1fr) 84px;
+  gap: .4rem;
+}
+.editor-page .password-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: .45rem;
+}
+.editor-page .switch-row { gap: .35rem; }
+.editor-page .panel-heading-row {
+  gap: .4rem;
+  margin-bottom: .35rem;
+}
+.editor-page .panel-heading-row h2 { margin-bottom: .05rem; }
+.editor-page .initiative-input { max-width: none; }
+.editor-page .token-options-grid {
+  display: grid;
+  grid-template-columns: 82px minmax(120px,.7fr) minmax(145px,1fr);
+  gap: .4rem;
+  align-items: end;
+}
+.editor-page .token-control-option {
+  display: flex;
+  align-items: end;
+  min-height: 2rem;
+  padding-bottom: .3rem;
+}
+.editor-page .token-control-option .switch-row { margin: 0; }
+.editor-page .token-list { gap: .4rem; }
+.editor-page .token-card {
+  padding: .45rem;
+  border-radius: .4rem;
+}
+.editor-page .token-card-top {
+  gap: .4rem;
+  margin-bottom: .05rem;
+  line-height: 1.1;
+}
+.editor-page .token-color-dot {
+  width: .8rem;
+  height: .8rem;
+}
+.editor-page .player-url-row {
+  gap: .35rem;
+  margin-top: .35rem;
+  padding: .3rem .4rem;
+  font-size: .72rem;
+}
+.editor-page .player-url-row code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.editor-page .player-url-row button {
+  min-height: 1.8rem;
+  padding: .25rem .45rem;
+  white-space: nowrap;
+}
+.editor-page .delegate-control-row { margin-top: .2rem; }
+.editor-page .delegate-control-row select { width: min(100%, 15rem); min-height: 1.48rem; }
+.editor-page .token-actions { margin-top: .35rem; }
+.editor-page .preview-panel > .help-text { margin: .15rem 0; }
+.editor-page .preview-stage { height: min(70vh, 720px); }
+
+@media (min-width: 1550px) {
+  .editor-page .token-list { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .editor-page .token-options-grid {
+    grid-template-columns: 68px minmax(100px,.7fr) minmax(120px,1fr);
+    gap: .3rem;
+  }
+  .editor-page .token-card { min-width: 0; }
+}
+
+@media (max-width: 1150px) {
+  .editor-page .editor-grid { grid-template-columns: 1fr; }
+  .editor-page .preview-panel { position: static; }
+}
+
+@media (max-width: 700px) {
+  .editor-page { font-size: 15px; }
+  .editor-page .password-grid,
+  .editor-page .token-options-grid { grid-template-columns: 1fr; }
+  .editor-page .token-control-option { min-height: auto; padding-bottom: 0; }
+}
+
+/* Dense desktop editor layout */
+.editor-page {
+  padding: .28rem;
+  font-size: 12px;
+  line-height: 1.12;
+}
+.editor-page .editor-card { width: min(1900px, 100%); }
+.editor-page .editor-header {
+  gap: .35rem;
+  margin-bottom: .12rem;
+}
+.editor-page .editor-header h1 { font-size: 1.15rem; }
+.editor-page .editor-header p {
+  margin: .05rem 0 .1rem;
+  font-size: .68rem;
+}
+.editor-page .header-actions,
+.editor-page .control-row,
+.editor-page .button-row { gap: .24rem; }
+.editor-page .editor-grid {
+  grid-template-columns: minmax(610px, 1.18fr) minmax(500px, .82fr);
+  gap: .32rem;
+}
+.editor-page .panel {
+  margin: .28rem 0;
+  padding: .38rem;
+  border-radius: .32rem;
+}
+.editor-page .panel h2 {
+  margin: 0 0 .22rem;
+  font-size: .88rem;
+}
+.editor-page .panel h3 {
+  margin: .2rem 0 .12rem;
+  font-size: .76rem;
+}
+.editor-page .panel hr { margin: .3rem 0; }
+.editor-page label {
+  margin: .16rem 0 .07rem;
+  font-size: .7rem;
+  line-height: 1.08;
+}
+.editor-page .help-text {
+  margin-top: .1rem;
+  margin-bottom: .16rem;
+  font-size: .64rem;
+  line-height: 1.1;
+}
+.editor-page input[type=password],
+.editor-page input[type=file],
+.editor-page input[type=text],
+.editor-page input[type=number],
+.editor-page select {
+  min-height: 1.48rem;
+  padding: .16rem .28rem;
+  border-radius: .26rem;
+  font-size: .72rem;
+}
+.editor-page input[type=file] { padding: .12rem .2rem; }
+.editor-page input[type=color] {
+  min-height: 1.48rem;
+  height: 1.48rem;
+  padding: .06rem;
+  border-radius: .26rem;
+}
+.editor-page input[type=range] {
+  flex-basis: 130px;
+  margin: 0;
+}
+.editor-page output {
+  min-width: 2.6rem;
+  font-size: .68rem;
+}
+.editor-page button,
+.editor-page .button-link {
+  min-height: 1.48rem;
+  padding: .16rem .38rem;
+  border-radius: .26rem;
+  font-size: .7rem;
+  line-height: 1.05;
+}
+.editor-page .message {
+  margin: .18rem 0;
+  padding: .25rem .35rem;
+  font-size: .7rem;
+}
+.editor-page .form-grid {
+  grid-template-columns: minmax(0,1fr) 62px;
+  gap: .24rem;
+}
+.editor-page .password-grid { gap: .25rem; }
+.editor-page .switch-row {
+  gap: .22rem;
+  line-height: 1.05;
+}
+.editor-page .switch-row input[type=checkbox] {
+  width: .82rem;
+  height: .82rem;
+}
+.editor-page .panel-heading-row {
+  gap: .25rem;
+  margin-bottom: .18rem;
+}
+.editor-page .panel-heading-row h2 { margin-bottom: 0; }
+.editor-page .token-options-grid {
+  grid-template-columns: 58px minmax(88px,.65fr) minmax(110px,1fr);
+  gap: .22rem;
+}
+.editor-page .token-control-option {
+  min-height: 1.48rem;
+  padding-bottom: .14rem;
+}
+.editor-page .area-form-grid {
+  grid-template-columns: minmax(115px,1fr) 74px 52px;
+  gap: .22rem;
+}
+.editor-page .area-shape-settings { gap: .25rem; margin: .22rem 0; }
+.editor-page .area-size-input { gap: .15rem; }
+.editor-page .area-size-input input { width: 4.2rem; }
+.editor-page .area-list { gap: .22rem; margin-top: .3rem; }
+.editor-page .area-card {
+  /* The AOE panel shares the left editor column with Add token, so a five-column
+     card is wider than the panel on ordinary desktop widths. Keep identity fields
+     on the first row, then give settings and actions the full card width. */
+  grid-template-columns: minmax(0,1fr) 65px 45px;
+  gap: .22rem;
+  padding: .28rem;
+  border-radius: .28rem;
+}
+.editor-page .area-card > * { min-width: 0; }
+.editor-page .area-card-settings {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+.editor-page .area-card input[type=range] { flex-basis: 70px; }
+.editor-page .area-card output { min-width: 2.6rem; }
+.editor-page .cone-inline-settings { gap: .18rem; }
+.editor-page .area-mini-field .area-size-input input { width: 3.6rem; }
+.editor-page .area-card-actions {
+  grid-column: 1 / -1;
+  gap: .18rem;
+  min-width: 0;
+  justify-content: flex-end;
+}
+.editor-page .area-card-actions .danger-button {
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+
+.editor-page .token-list { gap: .25rem; }
+.editor-page .token-card {
+  padding: .28rem;
+  border-radius: .28rem;
+}
+.editor-page .token-card-top {
+  gap: .25rem;
+  margin-bottom: 0;
+  font-size: .72rem;
+  line-height: 1;
+}
+.editor-page .token-color-dot {
+  width: .62rem;
+  height: .62rem;
+}
+.editor-page .player-url-row {
+  gap: .2rem;
+  margin-top: .2rem;
+  padding: .18rem .25rem;
+  border-radius: .24rem;
+  font-size: .6rem;
+  line-height: 1.05;
+}
+.editor-page .player-url-row button {
+  min-height: 1.3rem;
+  padding: .12rem .28rem;
+  font-size: .62rem;
+}
+.editor-page .token-actions { margin-top: .2rem; }
+.editor-page .preview-panel > .help-text { margin: .07rem 0; }
+.editor-page .preview-stage { height: min(62vh, 640px); }
+.editor-page .initiative-tracker-heading .help-text {
+  margin: 0 0 .16rem;
+}
+.editor-page .initiative-list {
+  gap: .18rem;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+}
+.editor-page .initiative-row {
+  grid-template-columns: 1.85rem minmax(0,1fr);
+  gap: .24rem;
+  padding: .18rem .24rem;
+  border-radius: .24rem;
+}
+.editor-page .initiative-badge {
+  min-height: 1.25rem;
+  padding: .08rem .18rem;
+  border-radius: .22rem;
+  font-size: .68rem;
+}
+.editor-page .initiative-name-wrap { gap: .22rem; }
+.editor-page .initiative-token-dot { width: .52rem; height: .52rem; }
+.editor-page .initiative-token-name { font-size: .68rem; }
+
+/* Three token cards per row on roomy desktop displays. */
+@media (min-width: 1600px) {
+  .editor-page .token-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .editor-page .token-options-grid {
+    grid-template-columns: 52px minmax(82px,.65fr) minmax(100px,1fr);
+    gap: .18rem;
+  }
+}
+
+/* Two cards still save substantial vertical space on ordinary desktop widths. */
+@media (min-width: 1250px) and (max-width: 1599px) {
+  .editor-page .token-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Preserve usability when the editor collapses to a single column. */
+@media (max-width: 1150px) {
+  .editor-page { font-size: 12px; }
+  .editor-page .editor-grid { grid-template-columns: 1fr; }
+}
+
+/* Phones/tablets stay compact, but not so tiny that touch controls become impractical. */
+@media (max-width: 700px) {
+  .editor-page {
+    padding: .35rem;
+    font-size: 13px;
+  }
+  .editor-page button,
+  .editor-page .button-link {
+    min-height: 1.8rem;
+    font-size: .78rem;
+  }
+  .editor-page input[type=password],
+  .editor-page input[type=file],
+  .editor-page input[type=text],
+  .editor-page input[type=number],
+  .editor-page select,
+  .editor-page input[type=color] {
+    min-height: 1.8rem;
+    font-size: .78rem;
+  }
+  .editor-page .token-list { grid-template-columns: 1fr; }
+}
+
+
+/* Initiative stays in normal document flow outside the map preview. */
+.editor-page .editor-right-column {
+  min-width: 0;
+}
+.editor-page .editor-right-column > .panel {
+  position: static;
+}
+.editor-page .initiative-panel,
+.editor-page .initiative-list {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+.editor-page .initiative-panel {
+  margin-top: .28rem;
+}
+
+
+/* Content-sized editor fields; login fields stay narrow. */
+.editor-page .narrow-card {
+  width: min(360px, 100%);
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.editor-page .narrow-card input[type=password] {
+  width: 100%;
+  max-width: 320px;
+}
+.editor-page #imageInput {
+  width: min(340px, 100%);
+  max-width: 340px;
+}
+.editor-page #backgroundSelect {
+  width: 180px;
+  max-width: 100%;
+}
+.editor-page #gridColor {
+  width: 72px;
+  max-width: 72px;
+}
+
+@media (max-width: 420px) {
+  .editor-page .narrow-card {
+    width: 100%;
+    max-width: 100%;
+  }
+  .editor-page .narrow-card input[type=password],
+  .editor-page #imageInput {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .area-form-grid,
+  .editor-page .area-form-grid,
+  .area-card,
+  .editor-page .area-card { grid-template-columns: 1fr; }
+  .area-card-actions { justify-content: flex-start; }
+}
+
+
+/* Compact control rows */
+.editor-page .upload-control-row,
+.editor-page .display-action-row,
+.editor-page .grid-heading-row,
+.editor-page .add-token-final-row {
+  display: flex;
+  align-items: end;
+  gap: .3rem;
+  min-width: 0;
+}
+.editor-page .upload-control-row #imageInput {
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  min-width: 0;
+}
+.editor-page .upload-control-row button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.editor-page #uploadForm > .help-text {
+  margin-top: .15rem;
+  margin-bottom: 0;
+}
+.editor-page .display-action-row {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.editor-page .display-action-row > .button-row {
+  flex: 0 1 auto;
+}
+.editor-page .compact-inline-field {
+  display: flex;
+  align-items: center;
+  gap: .2rem;
+  min-width: 0;
+}
+.editor-page .compact-inline-field > label {
+  margin: 0;
+  white-space: nowrap;
+}
+.editor-page .background-inline-field {
+  margin-left: auto;
+}
+.editor-page .background-inline-field #backgroundSelect {
+  width: 96px;
+  min-width: 96px;
+}
+.editor-page .grid-heading-row {
+  justify-content: space-between;
+  align-items: center;
+}
+.editor-page .grid-heading-row > .switch-row {
+  margin: 0;
+}
+.editor-page .grid-color-inline-field {
+  margin-left: auto;
+}
+.editor-page .grid-color-inline-field #gridColor {
+  width: 42px;
+  max-width: 42px;
+  min-width: 42px;
+}
+.editor-page .add-token-final-row {
+  align-items: end;
+}
+.editor-page .add-token-final-row > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.editor-page .add-token-final-row select {
+  width: 100%;
+  max-width: none;
+}
+.editor-page .add-token-final-row > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.editor-page .player-url-row {
+  display: block;
+}
+.editor-page .player-url-row code {
+  display: block;
+  user-select: text;
+  cursor: text;
+}
+
+@media (max-width: 520px) {
+  .editor-page .upload-control-row,
+  .editor-page .display-action-row,
+  .editor-page .grid-heading-row,
+  .editor-page .add-token-final-row {
+    flex-wrap: wrap;
+  }
+  .editor-page .background-inline-field,
+  .editor-page .grid-color-inline-field {
+    margin-left: 0;
+  }
+}
+
+/* Collapsible session setup */
+.editor-page .editor-left-column {
+  gap: .32rem;
+}
+.editor-page .editor-setup-grid,
+.editor-page .editor-action-grid {
+  gap: .32rem;
+}
+.editor-page .editor-setup-collapse > summary {
+  padding: .28rem .4rem;
+  border-radius: .32rem;
+  font-size: .76rem;
+  line-height: 1.1;
+}
+.editor-page .editor-setup-collapse[open] > summary {
+  margin-bottom: .32rem;
+}
+.editor-page .setup-summary-help {
+  margin-left: .35rem;
+  font-size: .62rem;
+}
+
+@media (max-width: 700px) {
+  .editor-page .editor-setup-grid,
+  .editor-page .editor-action-grid {
+    grid-template-columns: 1fr;
+  }
+  .editor-page .setup-summary-help {
+    display: none;
+  }
+}
+
+/* Navigation and token visibility */
+.own-token {
+  border-width: 3px;
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,.95),
+    0 0 12px 5px rgba(255,255,255,.28),
+    0 2px 8px rgba(0,0,0,.95);
+}
+.admin-token.token-hidden-admin {
+  opacity: .42;
+  outline: 2px dashed rgba(255,255,255,.75);
+  outline-offset: 2px;
+}
+.editor-page .master-token-visibility {
+  flex: 0 0 auto;
+  margin: 0;
+  align-self: center;
+  white-space: nowrap;
+}
+.editor-page .token-options-grid {
+  grid-template-columns: 58px 64px minmax(88px,.65fr) minmax(110px,1fr);
+}
+@media (min-width: 1600px) {
+  .editor-page .token-options-grid {
+    grid-template-columns: 52px 58px minmax(82px,.65fr) minmax(100px,1fr);
+  }
+}
+@media (max-width: 700px) {
+  .editor-page .token-options-grid { grid-template-columns: 1fr; }
+  .editor-page .master-token-visibility { align-self: flex-start; }
+}
+
+.portal-page {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 1.25rem;
+  display: grid;
+  place-items: center;
+  background: #10161f;
+  color: #f3f6fa;
+}
+.portal-card {
+  width: min(680px, 100%);
+  padding: 1.4rem;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #17202b;
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
+}
+.portal-card h1 { margin: 0 0 .35rem; }
+.portal-intro { margin: 0 0 1.1rem; color: #b9c4d1; }
+.portal-links {
+  display: grid;
+  gap: .65rem;
+}
+.portal-link {
+  display: grid;
+  gap: .15rem;
+  padding: .9rem 1rem;
+  border: 1px solid #3d4b5d;
+  border-radius: 8px;
+  background: #202c3a;
+  color: #f3f6fa;
+  text-decoration: none;
+}
+.portal-link:hover,
+.portal-link:focus-visible { border-color: #8fb7ff; background: #263548; }
+.portal-link strong { font-size: 1.05rem; }
+.portal-link span { color: #b9c4d1; font-size: .92rem; }
+.player-login-card form { display: grid; gap: .55rem; }
+.player-login-card label { font-weight: 700; }
+.player-login-card select,
+.player-login-card input {
+  width: 100%;
+  padding: .65rem .7rem;
+  border: 1px solid #46576c;
+  border-radius: 6px;
+  background: #0f1720;
+  color: #f3f6fa;
+}
+.player-login-card button { margin-top: .25rem; }
+.portal-footer-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.portal-footer-links a { color: #a9c8ff; }
+
+/* Darkness / player vision controls. */
+.vision-control-row {
+  display: flex;
+  align-items: end;
+  gap: .55rem;
+  margin-top: .35rem;
+  flex-wrap: wrap;
+}
+.vision-control-row .vision-radius-wrap {
+  width: min(11rem, 40%);
+}
+.vision-control-row[hidden] { display: none; }
+/* Some editor controls use flex, so explicitly honor hidden on individual vision options too. */
+.editor-page .vision-control-row .token-control-option[hidden] { display: none !important; }
+@media (max-width: 700px) {
+  .vision-control-row { align-items: stretch; flex-direction: column; }
+  .vision-control-row .vision-radius-wrap { width: 100%; }
+}
+
+
+/* Token groups and NPC styling */
+.editor-page .token-groups {
+  display: block;
+}
+.editor-page .token-category + .token-category {
+  margin-top: .7rem;
+}
+.editor-page .token-category-title {
+  margin: 0 0 .3rem;
+  font-size: .82rem;
+  font-weight: 700;
+  color: #dbe5f0;
+}
+.editor-page .token-category-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .25rem;
+}
+.editor-page .token-card-player,
+.editor-page .token-card-player-npc,
+.editor-page .token-card-gm-npc {
+  background: #111a26;
+}
+.editor-page .token-card-player {
+  border: 1px solid #405168;
+}
+.editor-page .token-card-player-npc {
+  border: 3px solid #35c759;
+}
+.editor-page .token-card-gm-npc {
+  border: 3px solid #ff9f43;
+}
+.editor-page .token-delegate-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  gap: .45rem;
+  align-items: end;
+}
+.editor-page .npc-delegate-options {
+  display: flex;
+  align-items: end;
+  gap: .7rem;
+  flex-wrap: wrap;
+}
+.editor-page .npc-share-vision-option {
+  white-space: nowrap;
+}
+.editor-page .npc-share-vision-option[hidden] {
+  display: none !important;
+}
+/* Player tokens do not use NPC delegation or the NPC-only darkness reveal override. */
+.editor-page .token-delegate-row[hidden] {
+  display: none !important;
+}
+.editor-page .npc-reveal-option {
+  min-height: 1.48rem;
+  align-self: end;
+  white-space: nowrap;
+}
+@media (max-width: 1050px) {
+  .editor-page .token-category-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .editor-page .token-category-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Delegated NPC controls need their own rows. Trying to pack the controller,
+   shared vision, and darkness reveal options side by side made narrow cards unreadable. */
+.editor-page .token-delegate-row {
+  display: block;
+  margin-top: .45rem;
+}
+.editor-page .token-delegate-row > div:first-child {
+  width: min(100%, 15rem);
+}
+.editor-page .npc-delegate-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .3rem;
+  margin-top: .4rem;
+  align-items: start;
+}
+.editor-page .npc-share-vision-option,
+.editor-page .npc-reveal-option {
+  min-height: 0;
+  padding-bottom: 0;
+  white-space: normal;
+  align-items: start;
+}
+.editor-page .npc-share-vision-option .switch-row,
+.editor-page .npc-reveal-option .switch-row {
+  align-items: center;
+}
+.editor-page .token-card-player-npc .vision-control-row {
+  margin-top: .4rem;
+}
+
+/* Dedicated GM wall-map workspace. This stays full-window so wall tracing is practical on detailed maps. */
+html:has(.wallmap-page),
+body.wallmap-page {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+.wallmap-page {
+  margin: 0;
+}
+.wallmap-app {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #000;
+}
+.wallmap-toolbar {
+  flex: 0 0 auto;
+  min-height: 3.35rem;
+  padding: .4rem .65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .55rem .8rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #344358;
+  background: #10161f;
+}
+.wallmap-title-group,
+.wallmap-actions,
+.wallmap-tool-row {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  flex-wrap: wrap;
+}
+.wallmap-title-group {
+  gap: .75rem;
+}
+.wallmap-status {
+  color: #b9c4d0;
+  font-size: .9rem;
+}
+.wallmap-actions .switch-row {
+  margin: 0;
+}
+
+.wallmap-door-style-control {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 0;
+  white-space: nowrap;
+  font-size: .9rem;
+}
+.wallmap-door-style-control input[type="color"] {
+  width: 2.5rem;
+  height: 2rem;
+  padding: .12rem;
+}
+.wallmap-door-opacity-control input[type="range"] {
+  width: 8rem;
+}
+.wallmap-door-opacity-control output {
+  min-width: 3rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.wallmap-actions .button-link,
+.wallmap-tool-row button {
+  min-height: 2.15rem;
+  padding: .36rem .62rem;
+}
+.wallmap-tool.active {
+  border-color: #7fb5ff;
+  background: #274d78;
+  color: #fff;
+}
+.wallmap-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  touch-action: none;
+}
+.wallmap-stage .map-content {
+  position: relative;
+  flex: none;
+}
+.wallmap-stage .map-token {
+  touch-action: none;
+}
+/* Vision geometry is visible only to the GM. A broad transparent hit stroke keeps thin lines selectable. */
+.wallmap-blocker-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 7;
+  overflow: visible;
+  pointer-events: none;
+}
+.wallmap-blocker-line {
+  fill: none;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.wallmap-blocker-hit {
+  stroke: transparent;
+  stroke-width: 18;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.wallmap-wall-line {
+  stroke: #ff4d4f;
+}
+.wallmap-door-line {
+  stroke: #ffd43b;
+  stroke-width: 5;
+}
+.wallmap-door-open {
+  stroke-dasharray: 10 7;
+}
+/* Purple tells the GM this door still blocks vision normally but is not advertised to players. */
+.wallmap-door-hidden {
+  stroke: #c77dff;
+}
+.wallmap-door-visible-row {
+  margin: 0;
+  white-space: nowrap;
+}
+/* switch-row has its own display rule, so keep HTML hidden authoritative here. */
+.wallmap-door-visible-row[hidden] { display: none; }
+.wallmap-blocker-line.selected {
+  stroke-width: 8;
+  filter: drop-shadow(0 0 3px #fff);
+}
+.wallmap-drawing-point {
+  fill: #fff;
+  stroke: #111;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.wallmap-page .map-content[data-wall-mode="wall"],
+.wallmap-page .map-content[data-wall-mode="door"] {
+  cursor: crosshair;
+}
+@media (max-width: 950px) {
+  .wallmap-toolbar {
+    align-items: flex-start;
+  }
+  .wallmap-title-group,
+  .wallmap-actions {
+    gap: .4rem;
+  }
+}
+
+
+/* Initiative and recent moves share one fixed stack so combat status never changes map dimensions. */
+.map-info-stack {
+  position: fixed;
+  left: max(8px, env(safe-area-inset-left));
+  bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .35rem;
+  max-width: min(34rem, calc(100vw - 16px));
+  pointer-events: none;
+}
+.recent-moves,
+.current-initiative {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: .42rem .55rem;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: .45rem;
+  background: rgba(8,12,18,.78);
+  color: #fff;
+  font-size: .78rem;
+  line-height: 1.25;
+  text-shadow: 0 1px 2px #000;
+  box-shadow: 0 2px 10px rgba(0,0,0,.35);
+  backdrop-filter: blur(3px);
+}
+.recent-moves[hidden],
+.current-initiative[hidden] { display: none; }
+.current-initiative {
+  min-width: 12rem;
+  border-color: rgba(230,220,194,.48);
+}
+.current-initiative-title {
+  margin-bottom: .12rem;
+  color: #e6dcc2;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.current-initiative-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .86rem;
+  font-weight: 700;
+}
+.recent-moves-title {
+  margin-bottom: .18rem;
+  color: #d8e1eb;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.recent-move-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .45rem;
+  align-items: baseline;
+}
+.recent-move-time {
+  color: #b9c4d1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.recent-move-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .map-info-stack {
+    max-width: calc(100vw - 16px);
+  }
+  .recent-moves,
+  .current-initiative {
+    font-size: .72rem;
+  }
+}
+
+/* Initiative turn enforcement */
+.initiative-heading-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+.initiative-enforce-switch {
+  margin: 0;
+  white-space: nowrap;
+}
+.initiative-step-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+}
+.initiative-step-button {
+  min-width: 2.2rem;
+  padding-inline: .55rem;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.active-initiative-label {
+  min-width: 10rem;
+  max-width: 18rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-weight: 800;
+  color: #f2df9b;
+}
+.initiative-row-active {
+  border: 2px solid #e1b94f;
+  background: #2a2415;
+  box-shadow: 0 0 0 1px rgba(225, 185, 79, .25);
+}
+.initiative-row-active .initiative-badge {
+  border-color: #e1b94f;
+}
+.editor-page .initiative-heading-controls { gap: .24rem; }
+.editor-page .initiative-step-controls { gap: .18rem; }
+.editor-page .initiative-step-button {
+  min-width: 1.7rem;
+  min-height: 1.55rem;
+  padding: .12rem .34rem;
+  font-size: .8rem;
+}
+.editor-page .active-initiative-label {
+  min-width: 8rem;
+  max-width: 13rem;
+  font-size: .68rem;
+}
+.editor-page .initiative-enforce-switch { font-size: .68rem; }
+
+@media (max-width: 700px) {
+  .initiative-heading-controls {
+    justify-content: flex-start;
+    width: 100%;
+  }
+  .active-initiative-label { min-width: 7rem; }
+}
+
+/* Keep token option fields inside their cards at all responsive widths. */
+.editor-page .token-card,
+.editor-page .token-options-grid,
+.editor-page .token-options-grid > * {
+  min-width: 0;
+}
+.editor-page .token-options-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 105px), 1fr));
+}
+.editor-page .token-options-grid input[type=text],
+.editor-page .token-options-grid input[type=number],
+.editor-page .token-options-grid select {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+.editor-page .token-options-grid label,
+.editor-page .token-options-grid .switch-row span {
+  overflow-wrap: anywhere;
+}
+
+/* Autosave feedback stays quiet. A persistent banner after every field change was too distracting. */
+.editor-page .autosave-status {
+  margin-right: auto;
+  min-width: 4.8rem;
+  font-size: .68rem;
+  line-height: 1.2;
+  color: #93a4b8;
+  white-space: nowrap;
+}
+.editor-page .autosave-status[data-state="saving"] { color: #e6c76b; }
+.editor-page .autosave-status[data-state="saved"] { color: #8fb99b; }
+.editor-page .autosave-status[data-state="error"] { color: #ff8a80; font-weight: 700; }
+.editor-page .token-actions,
+.editor-page .area-card-actions {
+  width: 100%;
+}
+
+/* Compact numeric token fields */
+.editor-page .token-options-grid .initiative-input {
+  width: 4rem;
+  max-width: 4rem;
+}
+.editor-page .vision-control-row .vision-radius-input {
+  width: 4.5rem;
+  max-width: 4.5rem;
+}
+.editor-page .token-card-player .token-name-input {
+  width: 33.333%;
+  max-width: 33.333%;
+}
+@media (max-width: 700px) {
+  .editor-page .token-card-player .token-name-input {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Token-card field alignment */
+.editor-page .token-options-grid .initiative-input,
+.editor-page .vision-control-row .vision-radius-input {
+  width: 2.75rem;
+  min-width: 2.75rem;
+  max-width: 2.75rem;
+  padding-left: .16rem;
+  padding-right: .16rem;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.editor-page .token-options-grid .initiative-input::-webkit-inner-spin-button,
+.editor-page .token-options-grid .initiative-input::-webkit-outer-spin-button,
+.editor-page .vision-control-row .vision-radius-input::-webkit-inner-spin-button,
+.editor-page .vision-control-row .vision-radius-input::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+.editor-page .token-name-control-row {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+}
+.editor-page .token-name-control-row .token-name-input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+.editor-page .token-name-control-row .token-player-control-inline {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 0;
+}
+.editor-page .token-name-control-row .token-player-control-inline .switch-row {
+  margin: 0;
+  white-space: nowrap;
+}
+.editor-page .token-card-player .token-name-control-row .token-name-input {
+  flex: 0 1 33.333%;
+  width: 33.333%;
+  max-width: 33.333%;
+}
+@media (max-width: 700px) {
+  .editor-page .token-card-player .token-name-control-row .token-name-input {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* Feature-request pages reuse the site palette but stay separate from the dense GM editor layout. */
+.feature-request-form {
+  display: grid;
+  gap: .55rem;
+}
+.feature-request-form label {
+  margin-bottom: 0;
+}
+.feature-request-form input[type=text],
+.feature-request-form input[type=number],
+.feature-request-form textarea {
+  width: 100%;
+  padding: .65rem .7rem;
+  border: 1px solid #46576c;
+  border-radius: 6px;
+  background: #0f1720;
+  color: #f3f6fa;
+  font: inherit;
+}
+.feature-request-form textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+.feature-request-form .feature-request-math {
+  width: 5rem;
+}
+.feature-request-actions {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  flex-wrap: wrap;
+  margin-top: .25rem;
+}
+
+/* Public feature requests */
+.feature-request-footer-links {
+  display: flex;
+  gap: .8rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: .9rem;
+  border-top: 1px solid #334155;
+}
+.feature-request-footer-links a:not(.button-link) {
+  color: #b9d4ff;
+}
+.feature-request-list {
+  display: grid;
+  gap: .8rem;
+}
+.feature-request-item {
+  padding: .85rem .95rem;
+  border: 1px solid #3f4f63;
+  border-radius: 8px;
+  background: #111b27;
+}
+.feature-request-item p {
+  margin: .55rem 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.feature-request-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+  color: #aebdce;
+  font-size: .85rem;
+}
+.feature-request-meta strong {
+  color: #f3f6fa;
+}
+
+/* Request status should remain easy to scan. */
+.feature-request-meta-left {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  min-width: 0;
+}
+.feature-request-status {
+  display: inline-block;
+  flex: 0 0 auto;
+  padding: .15rem .5rem;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.feature-request-status-active {
+  border-color: #72c58a;
+  color: #b9efc8;
+}
+.feature-request-status-completed {
+  border-color: #8c98a8;
+  color: #c4ccd6;
+}
+
+
+/* Multi-map library: compact enough for the editor, with activation kept visually obvious. */
+.editor-page .map-library-panel {
+  grid-column: 1 / -1;
+}
+.editor-page .map-library-heading {
+  align-items: center;
+}
+.editor-page .map-library-count {
+  white-space: nowrap;
+  font-size: .78rem;
+  color: #aebbd0;
+}
+.editor-page .map-upload-form {
+  display: grid;
+  grid-template-columns: minmax(9rem, .7fr) minmax(14rem, 1.5fr) auto;
+  gap: .45rem;
+  align-items: end;
+  margin-bottom: .35rem;
+}
+.editor-page .map-library-list {
+  display: grid;
+  gap: .35rem;
+  margin-top: .4rem;
+}
+.editor-page .map-library-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .6rem;
+  align-items: center;
+  padding: .4rem .5rem;
+  border: 1px solid #344358;
+  border-radius: .35rem;
+  background: #182232;
+}
+.editor-page .map-library-row.active-map {
+  border-color: #8f7841;
+  background: #211f19;
+}
+.editor-page .map-library-info {
+  min-width: 0;
+  display: grid;
+  gap: .08rem;
+}
+.editor-page .map-library-title-row {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+}
+.editor-page .map-library-title-row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.editor-page .map-active-badge,
+.wallmap-map-mode {
+  display: inline-block;
+  padding: .08rem .35rem;
+  border: 1px solid #8f7841;
+  border-radius: 999px;
+  color: #e4cf91;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.editor-page .map-library-details {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.editor-page .map-library-actions {
+  display: flex;
+  gap: .3rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.editor-page .map-library-actions .button-link,
+.editor-page .map-library-actions button {
+  padding: .3rem .5rem;
+  font-size: .76rem;
+}
+.wallmap-map-mode {
+  border-color: #4d617d;
+  color: #b9c9df;
+}
+@media (max-width: 760px) {
+  .editor-page .map-upload-form,
+  .editor-page .map-library-row {
+    grid-template-columns: 1fr;
+  }
+  .editor-page .map-library-actions {
+    justify-content: flex-start;
+  }
+}
+
+
+/* GM login and account switching */
+.editor-page .gm-login-card {
+  padding-top: max(2rem, 8vh);
+}
+.editor-page .gm-login-card input[type=text],
+.editor-page .gm-login-card input[type=password] {
+  width: 100%;
+  max-width: 320px;
+}
+.editor-page .gm-login-actions {
+  margin-top: .75rem;
+}
+
+/* Map-local encounter visibility */
+.editor-page .admin-area.area-hidden-admin {
+  opacity: .35;
+}
+.editor-page .area-visible-control {
+  margin-right: auto;
+}
+
+
+/* GM audit panel and release footer */
+.editor-page .player-activity-panel { margin-top: .28rem; }
+.editor-page .player-activity-group + .player-activity-group {
+  margin-top: 1rem;
+  padding-top: .85rem;
+  border-top: 1px solid #334155;
+}
+.editor-page .player-activity-group h3 {
+  margin: 0 0 .4rem;
+  font-size: .92rem;
+}
+.editor-page .player-activity-head,
+.editor-page .player-activity-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, .8fr) minmax(12rem, 1.5fr) minmax(7rem, .7fr);
+  gap: .65rem;
+  align-items: center;
+}
+.editor-page .player-activity-head {
+  padding: 0 .45rem .25rem;
+  color: #aebdce;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.editor-page .player-activity-log {
+  display: grid;
+  gap: .3rem;
+  max-height: 7rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-right: .2rem;
+}
+.editor-page .player-activity-row {
+  padding: .38rem .45rem;
+  border: 1px solid #405168;
+  border-radius: .4rem;
+  background: #111a26;
+  font-size: .78rem;
+}
+.editor-page .player-activity-row time {
+  color: #c7d2df;
+  font-variant-numeric: tabular-nums;
+}
+.editor-page .player-activity-row code {
+  color: #d9e4f0;
+  overflow-wrap: anywhere;
+}
+.editor-version {
+  width: min(1800px, calc(100% - 1.2rem)); margin: .35rem auto .75rem;
+  color: #8796a8; font-size: .72rem; text-align: right;
+}
+@media (max-width: 760px) {
+  .editor-page .player-activity-head { display: none; }
+  .editor-page .player-activity-row { grid-template-columns: 1fr; gap: .2rem; }
+  .editor-version { text-align: center; }
+}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>The Scrying Table - VTT</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+  <script>window.VTT_BASE = {{ request.script_root|tojson }};</script>
+  <script src="{{ url_for('static',filename='viewer.js',v='1.17.3') }}" defer></script>
+</head>
+<body class="viewer-page">
+  <main id="mapStage" class="map-stage">
+    <div id="mapContent" class="map-content" hidden>
+      <img id="mapImage" class="map-image" alt="">
+      <svg id="darknessLayer" class="darkness-layer" aria-hidden="true"></svg>
+      <svg id="doorLayer" class="public-door-layer" aria-hidden="true"></svg>
+      <div id="gridLayer" class="grid-layer" aria-hidden="true"></div>
+      <div id="areaLayer" class="area-layer" aria-hidden="true"></div>
+      <div id="tokenLayer" class="token-layer" aria-hidden="true"></div>
+    </div>
+  </main>
+  <div class="map-info-stack">
+    <aside id="currentInitiative" class="current-initiative" aria-live="polite" aria-label="Current initiative" hidden></aside>
+    <aside id="recentMoves" class="recent-moves" aria-live="polite" aria-label="Recent token moves" hidden></aside>
+  </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Scrying Table - VTT</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+</head>
+<body class="portal-page">
+  <main class="portal-card">
+    <h1>The Scrying Table - VTT</h1>
+    <p class="portal-intro">Choose how you want to join a game session.</p>
+    <nav class="portal-links" aria-label="The Scrying Table - VTT options">
+      <a class="portal-link" href="{{ url_for('viewer') }}">
+        <strong>Viewer</strong>
+        <span>Choose a GM session and open its read-only map</span>
+      </a>
+      <a class="portal-link" href="{{ url_for('edit') }}">
+        <strong>GM Editor</strong>
+        <span>Manage the map, tokens, initiative, and effects</span>
+      </a>
+      <a class="portal-link" href="{{ url_for('player_portal') }}">
+        <strong>Player</strong>
+        <span>Choose a GM session, then choose your player name</span>
+      </a>
+      <a class="portal-link" href="{{ url_for('feature_request') }}">
+        <strong>Feature Request</strong>
+        <span>Suggest an improvement to The Scrying Table - VTT</span>
+      </a>
+    </nav>
+  </main>
+</body>
+</html>

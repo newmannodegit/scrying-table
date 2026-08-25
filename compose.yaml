@@ -1,0 +1,30 @@
+services:
+  map-display:
+    image: map-display:local
+    build:
+      context: .
+    container_name: map-display
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATA_DIR: /data
+      MAX_UPLOAD_BYTES: "${MAX_UPLOAD_BYTES:-104857600}"
+      MAX_MAPS: "${MAX_MAPS:-20}"
+      SESSION_HOURS: "${SESSION_HOURS:-12}"
+      LOGIN_MAX_FAILURES: "${LOGIN_MAX_FAILURES:-10}"
+      LOGIN_WINDOW_SECONDS: "${LOGIN_WINDOW_SECONDS:-900}"
+    volumes:
+      - ./data:/data
+    ports:
+      - "${VTT_BIND_ADDR:-127.0.0.1}:${VTT_PORT:-8292}:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

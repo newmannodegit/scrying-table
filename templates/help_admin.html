@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Scrying Table: GM Help</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+</head>
+<body class="editor-page">
+<main class="help-card">
+  <header class="help-header">
+    <div><h1>The Scrying Table: GM Guide</h1><p>Quick reference for preparing and running a game.</p></div>
+    <div class="header-actions">
+      <a class="button-link" href="{{ url_for('home') }}">Home</a>
+      <a class="button-link" href="{{ url_for('edit') }}">Back to editor</a>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>GM accounts</h2>
+    <p>GM accounts are separate from player access. Nginx checks the GM username and password, then Flask keeps the editor session. Use <strong>Switch GM</strong> in the editor to sign out and return to the GM login page.</p>
+    <p>Each GM has an isolated game under <code>data/games/&lt;gm&gt;/</code>. The included <code>manage-gms.sh</code> script adds, renames, removes, and changes passwords for Scrying Table GMs.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Maps</h2>
+    <p>Add maps to the Map library before the session. <strong>Prepare walls</strong> opens the selected map in the wall/door editor. <strong>Activate</strong> makes that map live for connected players and the shared Viewer.</p>
+    <p>Grid settings, walls, doors, explored fog, token visibility, and AOE visibility are saved per map. Token positions and initiative are shared across the GM's game.</p>
+    <p><strong>Reset map</strong> clears explored fog and hides every token and AOE on that map. It keeps the image, grid, token and AOE definitions, positions, walls, doors, and door states. Any map can be deleted, including the active map.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Grid and display</h2>
+    <p>The active map stores its own grid on/off setting, square size, color, and opacity. Display zoom and background are also restored when that map is activated.</p>
+    <p><strong>GM darkness</strong> changes only the editor preview. It does not alter what players can see.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Player access</h2>
+    <p>Set the shared player password under VTT access. Players start at <code>/player</code>, choose the GM session and character, then enter that password. Changing or disabling the password invalidates existing player sessions.</p>
+    <p>The direct routes for this GM are <code>{{ public_prefix }}/player</code> and <code>{{ public_prefix }}/viewer</code>.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Tokens</h2>
+    <p>Player characters can move their own tokens. NPCs can remain GM-controlled or be delegated to a player. Existing token cards save automatically.</p>
+    <p><strong>Visible</strong> is map-specific. A hidden token is not sent to public views and contributes no light, line of sight, or shared fog. <strong>Show all tokens</strong> is the select-all control for the active map.</p>
+    <p>On dark maps, player characters can use a vision radius and either color vision or grayscale night vision. A delegated NPC can optionally share its own vision with its controller. <strong>Reveal in darkness</strong> exposes only that NPC with a small local opening and does not turn it into a party vision source.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Walls, doors, and fog</h2>
+    <p>Walls and closed doors block sight on both lit and dark maps. Open doors allow sight through the opening. Secret doors use the same blocking geometry but are not identified on public pages.</p>
+    <p>Persistent explored-area fog remembers terrain only. Previously explored terrain can remain dim, but creatures, AOEs, doors, initiative details, and movement still require current line of sight.</p>
+    <p>With stacked player vision enabled, player pages use the party's combined viewpoints. The shared Viewer always uses the party union.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Area-of-effect overlays</h2>
+    <p>Circle, cone, and line overlays are map annotations. Each overlay has map-specific visibility. Hidden overlays remain available to the GM but are not sent to public views.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Initiative</h2>
+    <p>Initiative accepts whole numbers from -99 through 99. The turn controls move through tokens that have an initiative value. <strong>Enforce initiative</strong> restricts player movement to the active turn; GM movement is never restricted.</p>
+    <p><strong>Clear All Initiative</strong> removes all initiative values and turns enforcement off.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Player activity</h2>
+    <p>The GM-only activity panel below Initiative order shows recent successful player logins and player-controlled token moves. Entries include the browser-local time and source IP address. Each list has its own scrollbar so older entries do not make the editor taller.</p>
+    <p>The records come from <code>data/games/&lt;gm&gt;/logs/</code>. Those logs contain IP addresses and should be treated as administrative data.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Movement lock</h2>
+    <p>Turn off <strong>Allow players to move their own tokens</strong> to freeze player movement without disconnecting anyone. Players continue receiving map and token updates.</p>
+  </section>
+</main>
+</body>
+</html>

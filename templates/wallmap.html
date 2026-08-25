@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>The Scrying Table - VTT: GM Wall Map</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
+  <script src="{{ url_for('static',filename='wallmap.js',v='1.17.3') }}" defer></script>
+</head>
+<body class="wallmap-page">
+  <main id="wallMapApp" class="wallmap-app" data-csrf-token="{{ csrf }}" data-map-id="{{ map_id }}">
+    <header class="wallmap-toolbar">
+      <div class="wallmap-title-group">
+        <strong>GM Wall Map: <span id="wallMapMapName">{{ map_name }}</span></strong>
+        <span id="wallMapMapMode" class="wallmap-map-mode"></span>
+        <span id="wallMapStatus" class="wallmap-status">Move tokens or trace vision-blocking walls and doors.</span>
+      </div>
+      <div class="wallmap-tool-row" aria-label="Wall map tools">
+        <button id="wallMapMoveTool" type="button" class="wallmap-tool active" aria-pressed="true">Move tokens</button>
+        <button id="wallMapWallTool" type="button" class="wallmap-tool" aria-pressed="false">Draw walls</button>
+        <button id="wallMapDoorTool" type="button" class="wallmap-tool" aria-pressed="false">Draw door</button>
+        <button id="wallMapSelectTool" type="button" class="wallmap-tool" aria-pressed="false">Select</button>
+        <button id="wallMapFinishButton" type="button" disabled>Finish wall</button>
+        <button id="wallMapDoorToggleButton" type="button" disabled>Open door</button>
+        <label id="wallMapDoorVisibleRow" class="switch-row wallmap-door-visible-row" hidden>
+          <input id="wallMapDoorVisible" type="checkbox">
+          <span>Visible to players</span>
+        </label>
+        <button id="wallMapDeleteButton" type="button" class="danger-button" disabled>Delete selected</button>
+      </div>
+      <div class="wallmap-actions">
+        <label class="wallmap-door-style-control">
+          <span>Door color</span>
+          <input id="wallMapDoorColor" type="color" value="#ffd54d">
+        </label>
+        <label class="wallmap-door-style-control wallmap-door-opacity-control">
+          <span>Door opacity</span>
+          <input id="wallMapDoorOpacity" type="range" min="10" max="100" step="5" value="72">
+          <output id="wallMapDoorOpacityValue" for="wallMapDoorOpacity">72%</output>
+        </label>
+        <label class="switch-row" for="wallMapDarkness">
+          <input id="wallMapDarkness" type="checkbox" checked>
+          <span>GM darkness</span>
+        </label>
+        <button id="wallMapDeleteAllButton" type="button" class="danger-button" disabled>Delete all walls and doors</button>
+        <a class="button-link" href="{{ url_for('edit') }}">Back to editor</a>
+      </div>
+    </header>
+
+    <section id="wallMapStage" class="wallmap-stage" aria-label="GM wall and token workspace">
+      <div id="wallMapContent" class="map-content" hidden>
+        <img id="wallMapImage" class="map-image" alt="Current map">
+        <svg id="wallMapDarknessLayer" class="darkness-layer" aria-hidden="true"></svg>
+        <div id="wallMapGridLayer" class="grid-layer"></div>
+        <div id="wallMapAreaLayer" class="area-layer"></div>
+        <div id="wallMapTokenLayer" class="token-layer"></div>
+        <svg id="wallMapBlockerLayer" class="wallmap-blocker-layer" aria-label="Vision walls and doors"></svg>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

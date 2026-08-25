@@ -1,0 +1,68 @@
+# Production Nginx example for The Scrying Table.
+# Replace the three YOUR_* placeholders before enabling this file.
+# If VTT_PORT is changed from 8292, update each proxy_pass below.
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name YOUR_VTT_HOSTNAME;
+
+    ssl_certificate YOUR_CERT_FULLCHAIN;
+    ssl_certificate_key YOUR_CERT_PRIVATE_KEY;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    client_max_body_size 101M;
+
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Referrer-Policy no-referrer always;
+    add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # Public game SSE stream. Disable proxy buffering so updates arrive promptly.
+    location ~ "^/g/[a-z0-9][a-z0-9_.-]{0,31}/events$" {
+        proxy_pass http://127.0.0.1:8292;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-RPG-GM-User "";
+        proxy_set_header X-RPG-GM-Auth "";
+        proxy_set_header Authorization "";
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 1h;
+    }
+
+    # The GM login page sends Basic Auth only to this credential-check endpoint.
+    # Nginx validates the account and forwards only the validated username.
+    location = /auth/gm/check {
+        auth_basic "Scrying Table GM";
+        auth_basic_user_file /etc/nginx/.htpasswd-scrying-gm;
+        proxy_pass http://127.0.0.1:8292;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-RPG-GM-User $remote_user;
+        proxy_set_header X-RPG-GM-Auth "validated";
+        proxy_set_header Authorization "";
+    }
+
+    # Ordinary browser/API traffic is authorized by Flask's signed session.
+    # Strip auth and trusted-identity headers to prevent client spoofing and to
+    # keep cached browser Basic Auth credentials away from the application.
+    location / {
+        proxy_pass http://127.0.0.1:8292;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-RPG-GM-User "";
+        proxy_set_header X-RPG-GM-Auth "";
+        proxy_set_header Authorization "";
+    }
+}
