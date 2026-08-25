@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>The Scrying Table - VTT Editor</title>
-  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.4') }}">
-  <script src="{{ url_for('static',filename='editor.js',v='1.17.4') }}" defer></script>
+  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.5') }}">
+  <script src="{{ url_for('static',filename='editor.js',v='1.17.5') }}" defer></script>
 </head>
 <body class="editor-page">
 <main id="editorApp" class="editor-card" data-csrf-token="{{ csrf }}">
@@ -51,6 +51,7 @@
           <div id="mapLibraryList" class="map-library-list" aria-live="polite"></div>
         </section>
 
+        <div class="editor-setup-column">
         <section class="panel">
           <h2>Display controls</h2>
           <div class="control-row">
@@ -105,7 +106,9 @@
           </div>
           <p class="help-text">Token sizes are stored relative to the map. Viewer and player pages use the mobile size on touch-oriented devices; GM pages continue to use the global size.</p>
         </section>
+        </div>
 
+        <div class="editor-setup-column">
         <section class="panel">
           <h2>Grid overlay</h2>
           <div class="grid-heading-row">
@@ -131,7 +134,7 @@
           <p class="help-text">These grid settings are saved separately for each map. Grid size is relative to that map's width.</p>
         </section>
 
-        <section class="panel vtt-access-panel">
+        <section class="panel">
           <h2>VTT access</h2>
           <p class="help-text">Player portal: <a href="{{ public_prefix }}/player" target="_blank">{{ public_prefix }}/player</a></p>
           <p id="vttPasswordStatus" class="help-text">Loading password status…</p>
@@ -152,6 +155,7 @@
             </div>
           </form>
         </section>
+        </div>
 
         </div>
       </details>

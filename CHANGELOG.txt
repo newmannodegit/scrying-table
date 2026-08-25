@@ -1,3 +1,8 @@
+Version 1.17.5
+- Closed the vertical gap between Grid overlay and VTT access in the GM editor.
+- The setup panels now use independent left and right columns so the right-side panels stack naturally.
+- No VTT access behavior, game state, or backend logic changes.
+
 Version 1.17.4
 - Moved the VTT access panel in the GM editor so it appears below Grid overlay instead of below Display controls.
 - No VTT access behavior, game state, or backend logic changes.

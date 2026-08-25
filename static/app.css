@@ -375,8 +375,16 @@ button, input, select { font: inherit; }
   align-items: start;
 }
 .editor-setup-grid > .panel,
-.editor-action-grid > .panel {
+.editor-action-grid > .panel,
+.editor-setup-column > .panel {
   margin: 0;
+  min-width: 0;
+}
+.editor-setup-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-content: start;
   min-width: 0;
 }
 .editor-setup-collapse > summary {
@@ -1303,7 +1311,8 @@ code {
   gap: .32rem;
 }
 .editor-page .editor-setup-grid,
-.editor-page .editor-action-grid {
+.editor-page .editor-action-grid,
+.editor-page .editor-setup-column {
   gap: .32rem;
 }
 .editor-page .editor-setup-collapse > summary {
@@ -1324,9 +1333,6 @@ code {
   .editor-page .editor-setup-grid,
   .editor-page .editor-action-grid {
     grid-template-columns: 1fr;
-  }
-  .editor-page .vtt-access-panel {
-    grid-column: auto;
   }
   .editor-page .setup-summary-help {
     display: none;
@@ -2075,9 +2081,6 @@ body.wallmap-page {
 /* Multi-map library: compact enough for the editor, with activation kept visually obvious. */
 .editor-page .map-library-panel {
   grid-column: 1 / -1;
-}
-.editor-page .vtt-access-panel {
-  grid-column: 2;
 }
 .editor-page .map-library-heading {
   align-items: center;
