@@ -23,7 +23,7 @@ docker compose version
 ```bash
 sudo mkdir -p /srv
 cd /srv
-sudo git clone https://github.com/YOUR-ACCOUNT/scrying-table.git
+sudo git clone https://github.com/newmannodegit/scrying-table.git
 sudo chown -R "$(id -u):$(id -g)" /srv/scrying-table
 cd /srv/scrying-table
 ```

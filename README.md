@@ -1,6 +1,6 @@
 # The Scrying Table
 
-The Scrying Table is a small, self-hosted virtual tabletop for groups that want a shared encounter map without the overhead of a full VTT platform. It provides GM map preparation, player-controlled tokens, line of sight, fog of war, doors, initiative, and area-of-effect markers in a browser.
+The Scrying Table is a small, self hosted virtual tabletop for groups that want a shared encounter map without the overhead of a full VTT platform.  It provides GM map preparation, player controlled tokens, line of sight, fog of war, doors, initiative, and area-of-effect markers in a browser.
 
 One installation can host multiple GMs. Each GM has a separate game directory, maps, tokens, player password, visibility state, fog history, and audit log.
 
@@ -8,16 +8,16 @@ One installation can host multiple GMs. Each GM has a separate game directory, m
 
 - Prepared map library with per-map grid and visibility settings
 - Multiple isolated GM sessions
-- Player-controlled, delegated, and GM-controlled tokens
-- Wall and closed-door line of sight
+- Player controlled, delegated, and GM controlled tokens
+- Wall and closed door line of sight
 - Dark maps, light sources, night vision, and vision radii
 - Persistent explored-area fog
 - Ordinary and secret doors
 - Circle, cone, and line area-of-effect overlays
 - Initiative tracking and optional turn enforcement
-- Read-only shared Viewer plus individual player views
-- Live browser updates over Server-Sent Events
-- GM-only connection and player-movement audit log
+- Read only shared Viewer plus individual player views
+- Live browser updates over Server Sent Events
+- GM only connection and player movement audit log
 - Docker Compose deployment behind Nginx
 
 ## Requirements
@@ -170,4 +170,8 @@ curl -fsS http://127.0.0.1:8292/healthz
 
 ## License
 
-No license has been selected yet. Add one before publishing the repository if you want others to have explicit permission to copy, modify, or redistribute the project.
+The Scrying Table is released under the MIT License.
+
+You are free to use, copy, modify, distribute, and incorporate the software into other projects, including commercial projects, provide that the copyright and license notice are preserved.
+
+See [LICENSE](LICENSE) for the full license text.

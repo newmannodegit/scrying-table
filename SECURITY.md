@@ -34,4 +34,16 @@ The application trusts one reverse-proxy hop through Werkzeug `ProxyFix`. If you
 
 ## Reporting a vulnerability
 
-Before publishing the repository, replace this section with the private contact method you want researchers to use. Avoid asking people to disclose unpatched vulnerabilities in a public issue.
+Please do not report security vulnerabilities through public GitHub issues.
+
+Use GitHub's private vulnerability reporting feature for this repository. This allows security issues to be reported directly to the maintainer without publicly disclosing the vulnerability before a fix is available.
+
+Reports should include, where possible:
+
+- a description of the vulnerability
+- steps to reproduce it
+- the affected version
+- the potential impact
+- any suggested mitigation or fix
+
+Security reports will be reviewed as promptly as possible.
