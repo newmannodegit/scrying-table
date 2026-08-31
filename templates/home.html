@@ -1,35 +1,119 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b0d0f">
   <title>The Scrying Table - VTT</title>
   <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
   <link rel="stylesheet" href="{{ url_for('static',filename='newman-node.css',v='1.18.0') }}">
   <link rel="stylesheet" href="{{ url_for('static',filename='map-admin.css',v='1.18.0') }}">
+  <link rel="stylesheet" href="{{ url_for('static',filename='map-home.css',v='1.18.1') }}">
 </head>
-<body class="portal-page">
-  <main class="portal-card">
-    <h1>The Scrying Table - VTT</h1>
-    <p class="portal-intro">Choose how you want to join a game session.</p>
-    <nav class="portal-links" aria-label="The Scrying Table - VTT options">
-      <a class="portal-link" href="{{ url_for('viewer') }}">
-        <strong>Viewer</strong>
-        <span>Choose a GM session and open its read-only map</span>
-      </a>
-      <a class="portal-link" href="{{ url_for('edit') }}">
-        <strong>GM Editor</strong>
-        <span>Manage the map, tokens, initiative, and effects</span>
-      </a>
-      <a class="portal-link" href="{{ url_for('player_portal') }}">
-        <strong>Player</strong>
-        <span>Choose a GM session, then choose your player name</span>
-      </a>
-      <a class="portal-link" href="{{ url_for('feature_request') }}">
-        <strong>Feature Request</strong>
-        <span>Suggest an improvement to The Scrying Table - VTT</span>
-      </a>
-    </nav>
+<body class="portal-page map-home-page">
+  <a class="map-home-skip" href="#map-home-actions">Skip to Scrying Table options</a>
+
+  <main class="map-home-shell">
+    <section class="map-home-hero" aria-labelledby="map-home-title">
+      <div class="map-home-hero-copy">
+        <p class="map-home-eyebrow">Newman Node / Virtual Tabletop</p>
+        <h1 id="map-home-title">The Scrying Table</h1>
+        <p class="map-home-subtitle">
+          Maps, tokens, visibility, initiative, and player access for tabletop sessions.
+        </p>
+      </div>
+
+      <div class="map-home-mark" aria-hidden="true">
+        <svg viewBox="0 0 96 96">
+          <rect x="14" y="14" width="68" height="68" rx="8"/>
+          <path d="M14 36h68M14 59h68M36 14v68M59 14v68"/>
+          <circle cx="59" cy="36" r="7"/>
+          <path d="M27 67 40 53l9 8 12-14 8 9"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="map-home-actions" id="map-home-actions">
+      <header class="map-home-actions-header">
+        <div>
+          <p class="map-home-kicker">Access</p>
+          <h2>Choose how to join</h2>
+        </div>
+        <span>4 options</span>
+      </header>
+
+      <nav class="map-home-action-list" aria-label="The Scrying Table options">
+        <a class="map-home-action" href="{{ url_for('viewer') }}">
+          <span class="map-home-action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M3.5 12s3.2-5 8.5-5 8.5 5 8.5 5-3.2 5-8.5 5-8.5-5-8.5-5Z"/>
+              <circle cx="12" cy="12" r="2.25"/>
+            </svg>
+          </span>
+          <span class="map-home-action-copy">
+            <strong>Viewer</strong>
+            <span>Choose a GM session and open its read-only map</span>
+          </span>
+          <span class="map-home-action-meta">Display</span>
+          <span class="map-home-action-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a class="map-home-action map-home-action--gm" href="{{ url_for('edit') }}">
+          <span class="map-home-action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <rect x="4" y="4" width="16" height="16" rx="2"/>
+              <path d="M8 16 16 8M13 8h3v3"/>
+              <circle cx="9" cy="10" r="1.2"/>
+            </svg>
+          </span>
+          <span class="map-home-action-copy">
+            <span class="map-home-action-title">
+              <strong>GM Editor</strong>
+              <span class="map-home-badge">GM</span>
+            </span>
+            <span>Prepare maps, tokens, visibility, initiative, and session access</span>
+          </span>
+          <span class="map-home-action-meta">Editor</span>
+          <span class="map-home-action-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a class="map-home-action" href="{{ url_for('player_portal') }}">
+          <span class="map-home-action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="3"/>
+              <path d="M6.5 19c.7-3.3 2.6-5 5.5-5s4.8 1.7 5.5 5"/>
+            </svg>
+          </span>
+          <span class="map-home-action-copy">
+            <strong>Player</strong>
+            <span>Choose a GM session, then choose your player name</span>
+          </span>
+          <span class="map-home-action-meta">VTT</span>
+          <span class="map-home-action-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a class="map-home-action" href="{{ url_for('feature_request') }}">
+          <span class="map-home-action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 18h6M10 21h4"/>
+              <path d="M8.2 14.8A6 6 0 1 1 15.8 14.8c-1.1.8-1.5 1.5-1.6 2.2h-4.4c-.1-.7-.5-1.4-1.6-2.2Z"/>
+            </svg>
+          </span>
+          <span class="map-home-action-copy">
+            <strong>Feature Request</strong>
+            <span>Suggest an improvement or new capability</span>
+          </span>
+          <span class="map-home-action-meta">Feedback</span>
+          <span class="map-home-action-arrow" aria-hidden="true">→</span>
+        </a>
+      </nav>
+
+      <footer class="map-home-footer">
+        <span>Selecting Viewer or Player will ask which GM session to join.</span>
+        <span class="map-home-mono">map.newmannode.com</span>
+      </footer>
+    </section>
   </main>
 </body>
 </html>

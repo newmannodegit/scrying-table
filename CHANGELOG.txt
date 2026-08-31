@@ -1,3 +1,8 @@
+Version 1.18.1
+- Refined the public landing page to match the Newman Node launcher design used by the rest of the tool suite.
+- Replaced the oversized portal buttons with compact action rows for Viewer, GM Editor, Player, and Feature Request.
+- This is a presentation-only change. Viewer, player VTT, GM editor behavior, routes, APIs, game state, and authentication are unchanged.
+
 Version 1.18.0
 - Added the first Newman Node unified visual-design pass to The Scrying Table administrative and utility interfaces.
 - Added shared Newman Node design tokens and a Scrying Table-specific administrative theme.
