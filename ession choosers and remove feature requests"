@@ -1,0 +1,612 @@
+[1mdiff --git a/CHANGELOG.txt b/CHANGELOG.txt[m
+[1mindex 1c1c669..e4f694e 100644[m
+[1m--- a/CHANGELOG.txt[m
+[1m+++ b/CHANGELOG.txt[m
+[36m@@ -1,3 +1,9 @@[m
+[32m+[m[32mVersion 1.18.2[m
+[32m+[m[32m- Refined the public Viewer and Player session choosers to use the compact Newman Node session-row design.[m
+[32m+[m[32m- Removed the Feature Request feature, including its landing-page entry, Flask routes and helpers, templates, styles, and current documentation reference.[m
+[32m+[m[32m- Existing feature-request data is no longer used by the application; the production installer archives any live feature_requests.jsonl file before removing it from the active data directory.[m
+[32m+[m[32m- Viewer, player VTT, GM editor, map state, authentication, and session behavior are unchanged.[m
+[32m+[m
+ Version 1.18.1[m
+ - Refined the public landing page to match the Newman Node launcher design used by the rest of the tool suite.[m
+ - Replaced the oversized portal buttons with compact action rows for Viewer, GM Editor, Player, and Feature Request.[m
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 9ffa69a..d79e642 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -122,7 +122,6 @@[m [mRuntime data is not part of the repository:[m
+ [m
+ ```text[m
+ data/[m
+[31m-├── feature_requests.jsonl[m
+ └── games/[m
+     └── <gm>/[m
+         ├── .auth-revision[m
+[1mdiff --git a/VERSION b/VERSION[m
+[1mindex ec6d649..b57fc72 100644[m
+[1m--- a/VERSION[m
+[1m+++ b/VERSION[m
+[36m@@ -1 +1 @@[m
+[31m-1.18.1[m
+[32m+[m[32m1.18.2[m
+[1mdiff --git a/app.py b/app.py[m
+[1mindex 87140ff..b8dcd62 100644[m
+[1m--- a/app.py[m
+[1m+++ b/app.py[m
+[36m@@ -252,11 +252,6 @@[m [mtoken_log_lock = threading.Lock()[m
+ vision_polygon_cache = {}[m
+ vision_polygon_cache_lock = threading.Lock()[m
+ VISION_POLYGON_CACHE_MAX = 512[m
+[31m-FEATURE_REQUEST_FILE = DATA_DIR / "feature_requests.jsonl"[m
+[31m-FEATURE_REQUEST_MAX_CHARS = 3000[m
+[31m-FEATURE_REQUEST_NAME_MAX_CHARS = 80[m
+[31m-FEATURE_REQUEST_CHALLENGE_SECONDS = 15 * 60[m
+[31m-feature_request_lock = threading.Lock()[m
+ FEET_PER_GRID_SQUARE = 5.0[m
+ NPC_REVEAL_RADIUS_FEET = 1.0[m
+ VISION_RAY_COUNT = 128[m
+[36m@@ -1238,116 +1233,6 @@[m [mdef clear_failures(kind, ip):[m
+         failures[kind].setdefault(current_game_slug(), {}).pop(ip, None)[m
+ [m
+ [m
+[31m-# The feature-request challenge is short-lived and consumed after one attempt.[m
+[31m-def feature_request_challenge(force_new=False):[m
+[31m-    now = int(time.time())[m
+[31m-    challenge = session.get("_feature_request_math")[m
+[31m-    valid = ([m
+[31m-        isinstance(challenge, dict)[m
+[31m-        and isinstance(challenge.get("left"), int)[m
+[31m-        and isinstance(challenge.get("right"), int)[m
+[31m-        and int(challenge.get("created", 0)) >= now - FEATURE_REQUEST_CHALLENGE_SECONDS[m
+[31m-    )[m
+[31m-    if force_new or not valid:[m
+[31m-        challenge = {[m
+[31m-            "left": secrets.randbelow(8) + 2,[m
+[31m-            "right": secrets.randbelow(8) + 2,[m
+[31m-            "created": now,[m
+[31m-        }[m
+[31m-        session["_feature_request_math"] = challenge[m
+[31m-    return challenge[m
+[31m-[m
+[31m-[m
+[31m-def append_feature_request(name, request_text):[m
+[31m-    record = {[m
+[31m-        "submitted_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),[m
+[31m-        "status": "active",[m
+[31m-        "name": name or None,[m
+[31m-        "request": request_text,[m
+[31m-    }[m
+[31m-    line = json.dumps(record, ensure_ascii=False) + "\n"[m
+[31m-    with feature_request_lock:[m
+[31m-        # Keep user-submitted request data private to the service account.[m
+[31m-        fd = os.open(FEATURE_REQUEST_FILE, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)[m
+[31m-        try:[m
+[31m-            os.write(fd, line.encode("utf-8"))[m
+[31m-        finally:[m
+[31m-            os.close(fd)[m
+[31m-[m
+[31m-[m
+[31m-def read_feature_requests():[m
+[31m-    """Return public feature requests grouped by status, then newest first."""[m
+[31m-    if not FEATURE_REQUEST_FILE.exists():[m
+[31m-        return [][m
+[31m-[m
+[31m-    records = [][m
+[31m-    with feature_request_lock:[m
+[31m-        try:[m
+[31m-            lines = FEATURE_REQUEST_FILE.read_text(encoding="utf-8").splitlines()[m
+[31m-        except OSError:[m
+[31m-            app.logger.exception("Could not read feature requests")[m
+[31m-            return [][m
+[31m-[m
+[31m-    for line in lines:[m
+[31m-        if not line.strip():[m
+[31m-            continue[m
+[31m-        try:[m
+[31m-            item = json.loads(line)[m
+[31m-        except (TypeError, ValueError):[m
+[31m-            continue[m
+[31m-        if not isinstance(item, dict):[m
+[31m-            continue[m
+[31m-[m
+[31m-        request_text = str(item.get("request") or "").strip()[m
+[31m-        if not request_text:[m
+[31m-            continue[m
+[31m-        name = str(item.get("name") or "").strip() or None[m
+[31m-[m
+[31m-        # Older request records have no status and are treated as active.[m
+[31m-        raw_status = str(item.get("status") or "active").strip().casefold() or "active"[m
+[31m-        if raw_status == "active":[m
+[31m-            status = "active"[m
+[31m-            status_rank = 0[m
+[31m-        elif raw_status == "completed":[m
+[31m-            status = "completed"[m
+[31m-            status_rank = 1[m
+[31m-        else:[m
+[31m-            status = raw_status[m
+[31m-            status_rank = 2[m
+[31m-[m
+[31m-        submitted_at = str(item.get("submitted_at") or "").strip()[m
+[31m-        submitted_display = submitted_at[m
+[31m-        submitted_sort = datetime.min.replace(tzinfo=timezone.utc)[m
+[31m-        if submitted_at:[m
+[31m-            try:[m
+[31m-                stamp = datetime.fromisoformat(submitted_at.replace("Z", "+00:00"))[m
+[31m-                if stamp.tzinfo is None:[m
+[31m-                    stamp = stamp.replace(tzinfo=timezone.utc)[m
+[31m-                submitted_sort = stamp.astimezone(timezone.utc)[m
+[31m-                submitted_display = submitted_sort.strftime("%Y-%m-%d %H:%M UTC")[m
+[31m-            except ValueError:[m
+[31m-                pass[m
+[31m-[m
+[31m-        # Pass only public fields to the template.[m
+[31m-        records.append({[m
+[31m-            "name": name,[m
+[31m-            "request": request_text,[m
+[31m-            "status": status,[m
+[31m-            "status_class": status if status in {"active", "completed"} else "other",[m
+[31m-            "submitted_at": submitted_display,[m
+[31m-            "_status_rank": status_rank,[m
+[31m-            "_submitted_sort": submitted_sort,[m
+[31m-        })[m
+[31m-[m
+[31m-    # Stable sorts keep newest-first ordering inside each status group.[m
+[31m-    records.sort(key=lambda item: item["_submitted_sort"], reverse=True)[m
+[31m-    records.sort(key=lambda item: item["_status_rank"])[m
+[31m-    for item in records:[m
+[31m-        item.pop("_status_rank", None)[m
+[31m-        item.pop("_submitted_sort", None)[m
+[31m-    return records[m
+[31m-[m
+[31m-[m
+ # ---- Audit log ------------------------------------------------------------[m
+ def _audit_value(value):[m
+     return json.dumps(str(value), ensure_ascii=False)[m
+[36m@@ -2573,70 +2458,6 @@[m [mdef viewer():[m
+     return render_template("viewer.html")[m
+ [m
+ [m
+[31m-@app.route("/feature-request", methods=["GET", "POST"])[m
+[31m-def feature_request():[m
+[31m-    error = None[m
+[31m-    success = bool(session.pop("_feature_request_submitted", False))[m
+[31m-    name = ""[m
+[31m-    request_text = ""[m
+[31m-[m
+[31m-    if request.method == "POST":[m
+[31m-        check_csrf()[m
+[31m-        if request.content_length and request.content_length > 16 * 1024:[m
+[31m-            abort(413)[m
+[31m-[m
+[31m-        name = str(request.form.get("name") or "").strip()[m
+[31m-        request_text = str(request.form.get("request_text") or "").strip()[m
+[31m-        answer = str(request.form.get("math_answer") or "").strip()[m
+[31m-[m
+[31m-        if len(name) > FEATURE_REQUEST_NAME_MAX_CHARS:[m
+[31m-            error = f"Name must be {FEATURE_REQUEST_NAME_MAX_CHARS} characters or fewer."[m
+[31m-        elif not request_text:[m
+[31m-            error = "Enter a feature request."[m
+[31m-        elif len(request_text) > FEATURE_REQUEST_MAX_CHARS:[m
+[31m-            error = f"Feature request must be {FEATURE_REQUEST_MAX_CHARS} characters or fewer."[m
+[31m-        else:[m
+[31m-            challenge = feature_request_challenge()[m
+[31m-            session.pop("_feature_request_math", None)[m
+[31m-            try:[m
+[31m-                correct = int(answer) == challenge["left"] + challenge["right"][m
+[31m-            except (TypeError, ValueError):[m
+[31m-                correct = False[m
+[31m-[m
+[31m-            if not correct:[m
+[31m-                error = "The math answer was incorrect. Try the new question below."[m
+[31m-            else:[m
+[31m-                try:[m
+[31m-                    append_feature_request(name, request_text)[m
+[31m-                except OSError:[m
+[31m-                    app.logger.exception("Could not write feature request")[m
+[31m-                    error = "The request could not be saved. Please try again."[m
+[31m-                else:[m
+[31m-                    session["_feature_request_submitted"] = True[m
+[31m-                    return redirect(url_for("feature_request"))[m
+[31m-[m
+[31m-    challenge = feature_request_challenge(force_new=bool(error and request.method == "POST"))[m
+[31m-    return render_template([m
+[31m-        "feature_request.html",[m
+[31m-        error=error,[m
+[31m-        success=success,[m
+[31m-        name=name,[m
+[31m-        request_text=request_text,[m
+[31m-        math_left=challenge["left"],[m
+[31m-        math_right=challenge["right"],[m
+[31m-        max_request_chars=FEATURE_REQUEST_MAX_CHARS,[m
+[31m-        max_name_chars=FEATURE_REQUEST_NAME_MAX_CHARS,[m
+[31m-    )[m
+[31m-[m
+[31m-[m
+[31m-@app.get("/feature-requests")[m
+[31m-def feature_requests():[m
+[31m-    return render_template([m
+[31m-        "feature_requests.html",[m
+[31m-        feature_requests=read_feature_requests(),[m
+[31m-    )[m
+[31m-[m
+[31m-[m
+ @app.route("/player", methods=["GET", "POST"])[m
+ def player_portal():[m
+     if not request.environ.get("VTT_GAME_SLUG"):[m
+[1mdiff --git a/static/app.css b/static/app.css[m
+[1mindex 0ace217..c7fa817 100644[m
+[1m--- a/static/app.css[m
+[1m+++ b/static/app.css[m
+[36m@@ -1977,107 +1977,6 @@[m [mbody.wallmap-page {[m
+   }[m
+ }[m
+ [m
+[31m-/* Feature-request pages reuse the site palette but stay separate from the dense GM editor layout. */[m
+[31m-.feature-request-form {[m
+[31m-  display: grid;[m
+[31m-  gap: .55rem;[m
+[31m-}[m
+[31m-.feature-request-form label {[m
+[31m-  margin-bottom: 0;[m
+[31m-}[m
+[31m-.feature-request-form input[type=text],[m
+[31m-.feature-request-form input[type=number],[m
+[31m-.feature-request-form textarea {[m
+[31m-  width: 100%;[m
+[31m-  padding: .65rem .7rem;[m
+[31m-  border: 1px solid #46576c;[m
+[31m-  border-radius: 6px;[m
+[31m-  background: #0f1720;[m
+[31m-  color: #f3f6fa;[m
+[31m-  font: inherit;[m
+[31m-}[m
+[31m-.feature-request-form textarea {[m
+[31m-  min-height: 10rem;[m
+[31m-  resize: vertical;[m
+[31m-}[m
+[31m-.feature-request-form .feature-request-math {[m
+[31m-  width: 5rem;[m
+[31m-}[m
+[31m-.feature-request-actions {[m
+[31m-  display: flex;[m
+[31m-  align-items: center;[m
+[31m-  gap: .65rem;[m
+[31m-  flex-wrap: wrap;[m
+[31m-  margin-top: .25rem;[m
+[31m-}[m
+[31m-[m
+[31m-/* Public feature requests */[m
+[31m-.feature-request-footer-links {[m
+[31m-  display: flex;[m
+[31m-  gap: .8rem;[m
+[31m-  flex-wrap: wrap;[m
+[31m-  margin-top: 1rem;[m
+[31m-  padding-top: .9rem;[m
+[31m-  border-top: 1px solid #334155;[m
+[31m-}[m
+[31m-.feature-request-footer-links a:not(.button-link) {[m
+[31m-  color: #b9d4ff;[m
+[31m-}[m
+[31m-.feature-request-list {[m
+[31m-  display: grid;[m
+[31m-  gap: .8rem;[m
+[31m-}[m
+[31m-.feature-request-item {[m
+[31m-  padding: .85rem .95rem;[m
+[31m-  border: 1px solid #3f4f63;[m
+[31m-  border-radius: 8px;[m
+[31m-  background: #111b27;[m
+[31m-}[m
+[31m-.feature-request-item p {[m
+[31m-  margin: .55rem 0 0;[m
+[31m-  white-space: pre-wrap;[m
+[31m-  overflow-wrap: anywhere;[m
+[31m-}[m
+[31m-.feature-request-meta {[m
+[31m-  display: flex;[m
+[31m-  justify-content: space-between;[m
+[31m-  gap: .75rem;[m
+[31m-  flex-wrap: wrap;[m
+[31m-  color: #aebdce;[m
+[31m-  font-size: .85rem;[m
+[31m-}[m
+[31m-.feature-request-meta strong {[m
+[31m-  color: #f3f6fa;[m
+[31m-}[m
+[31m-[m
+[31m-/* Request status should remain easy to scan. */[m
+[31m-.feature-request-meta-left {[m
+[31m-  display: flex;[m
+[31m-  align-items: center;[m
+[31m-  gap: .65rem;[m
+[31m-  min-width: 0;[m
+[31m-}[m
+[31m-.feature-request-status {[m
+[31m-  display: inline-block;[m
+[31m-  flex: 0 0 auto;[m
+[31m-  padding: .15rem .5rem;[m
+[31m-  border: 1px solid rgba(255,255,255,.25);[m
+[31m-  border-radius: 999px;[m
+[31m-  font-size: .75rem;[m
+[31m-  font-weight: 700;[m
+[31m-  letter-spacing: .04em;[m
+[31m-  text-transform: uppercase;[m
+[31m-}[m
+[31m-.feature-request-status-active {[m
+[31m-  border-color: #72c58a;[m
+[31m-  color: #b9efc8;[m
+[31m-}[m
+[31m-.feature-request-status-completed {[m
+[31m-  border-color: #8c98a8;[m
+[31m-  color: #c4ccd6;[m
+[31m-}[m
+[31m-[m
+[31m-[m
+ /* Multi-map library: compact enough for the editor, with activation kept visually obvious. */[m
+ .editor-page .map-library-panel {[m
+   grid-column: 1 / -1;[m
+[1mdiff --git a/templates/feature_request.html b/templates/feature_request.html[m
+[1mdeleted file mode 100644[m
+[1mindex 76a2c88..0000000[m
+[1m--- a/templates/feature_request.html[m
+[1m+++ /dev/null[m
+[36m@@ -1,45 +0,0 @@[m
+[31m-<!doctype html>[m
+[31m-<html>[m
+[31m-<head>[m
+[31m-  <meta charset="utf-8">[m
+[31m-  <meta name="viewport" content="width=device-width,initial-scale=1">[m
+[31m-  <title>The Scrying Table - VTT Feature Request</title>[m
+[31m-  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">[m
+[31m-</head>[m
+[31m-<body class="portal-page">[m
+[31m-  <main class="portal-card feature-request-card">[m
+[31m-    <h1>Feature Request</h1>[m
+[31m-    <p class="portal-intro">Have an idea that would make The Scrying Table - VTT more useful? Send it here.</p>[m
+[31m-    <p class="help-text">Submitted requests and the optional name are visible on the public feature-request list.</p>[m
+[31m-[m
+[31m-    {% if success %}[m
+[31m-      <div class="message">Thanks. Your feature request was saved.</div>[m
+[31m-    {% endif %}[m
+[31m-    {% if error %}[m
+[31m-      <div class="message error">{{ error }}</div>[m
+[31m-    {% endif %}[m
+[31m-[m
+[31m-    <form method="post" class="feature-request-form">[m
+[31m-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">[m
+[31m-[m
+[31m-      <label for="requestName">Your name <span class="help-text">(optional)</span></label>[m
+[31m-      <input id="requestName" name="name" type="text" maxlength="{{ max_name_chars }}" value="{{ name }}" autocomplete="name">[m
+[31m-[m
+[31m-      <label for="requestText">Feature request</label>[m
+[31m-      <textarea id="requestText" name="request_text" maxlength="{{ max_request_chars }}" required>{{ request_text }}</textarea>[m
+[31m-[m
+[31m-      <label for="mathAnswer">Human check: What is {{ math_left }} + {{ math_right }}?</label>[m
+[31m-      <input id="mathAnswer" class="feature-request-math" name="math_answer" type="number" inputmode="numeric" required autocomplete="off">[m
+[31m-[m
+[31m-      <div class="feature-request-actions">[m
+[31m-        <button class="primary-button" type="submit">Send request</button>[m
+[31m-        <a class="button-link" href="{{ url_for('home') }}">Back to The Scrying Table - VTT</a>[m
+[31m-      </div>[m
+[31m-    </form>[m
+[31m-[m
+[31m-    <nav class="feature-request-footer-links" aria-label="Feature request links">[m
+[31m-      <a href="{{ url_for('feature_requests') }}">View existing feature requests</a>[m
+[31m-    </nav>[m
+[31m-  </main>[m
+[31m-</body>[m
+[31m-</html>[m
+[1mdiff --git a/templates/feature_requests.html b/templates/feature_requests.html[m
+[1mdeleted file mode 100644[m
+[1mindex b0513fb..0000000[m
+[1m--- a/templates/feature_requests.html[m
+[1m+++ /dev/null[m
+[36m@@ -1,39 +0,0 @@[m
+[31m-<!doctype html>[m
+[31m-<html>[m
+[31m-<head>[m
+[31m-  <meta charset="utf-8">[m
+[31m-  <meta name="viewport" content="width=device-width,initial-scale=1">[m
+[31m-  <title>The Scrying Table - VTT Feature Requests</title>[m
+[31m-  <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">[m
+[31m-</head>[m
+[31m-<body class="portal-page">[m
+[31m-  <main class="portal-card feature-request-card">[m
+[31m-    <h1>Feature Requests</h1>[m
+[31m-    <p class="portal-intro">Ideas that have been submitted for The Scrying Table - VTT.</p>[m
+[31m-[m
+[31m-    {% if feature_requests %}[m
+[31m-      <div class="feature-request-list">[m
+[31m-        {% for item in feature_requests %}[m
+[31m-          <article class="feature-request-item">[m
+[31m-            <div class="feature-request-meta">[m
+[31m-              <div class="feature-request-meta-left">[m
+[31m-                <span class="feature-request-status feature-request-status-{{ item.status_class }}">{{ item.status|capitalize }}</span>[m
+[31m-                <strong>{{ item.name or 'Anonymous' }}</strong>[m
+[31m-              </div>[m
+[31m-              {% if item.submitted_at %}<span>{{ item.submitted_at }}</span>{% endif %}[m
+[31m-            </div>[m
+[31m-            <p>{{ item.request }}</p>[m
+[31m-          </article>[m
+[31m-        {% endfor %}[m
+[31m-      </div>[m
+[31m-    {% else %}[m
+[31m-      <div class="message">No feature requests have been submitted yet.</div>[m
+[31m-    {% endif %}[m
+[31m-[m
+[31m-    <nav class="feature-request-footer-links" aria-label="Feature request links">[m
+[31m-      <a class="button-link" href="{{ url_for('feature_request') }}">Submit a feature request</a>[m
+[31m-      <a class="button-link" href="{{ url_for('home') }}">Back to The Scrying Table - VTT</a>[m
+[31m-    </nav>[m
+[31m-  </main>[m
+[31m-</body>[m
+[31m-</html>[m
+[1mdiff --git a/templates/home.html b/templates/home.html[m
+[1mindex d31dafa..3a53f2a 100644[m
+[1m--- a/templates/home.html[m
+[1m+++ b/templates/home.html[m
+[36m@@ -40,7 +40,7 @@[m
+           <p class="map-home-kicker">Access</p>[m
+           <h2>Choose how to join</h2>[m
+         </div>[m
+[31m-        <span>4 options</span>[m
+[32m+[m[32m        <span>3 options</span>[m
+       </header>[m
+ [m
+       <nav class="map-home-action-list" aria-label="The Scrying Table options">[m
+[36m@@ -93,20 +93,6 @@[m
+           <span class="map-home-action-arrow" aria-hidden="true">→</span>[m
+         </a>[m
+ [m
+[31m-        <a class="map-home-action" href="{{ url_for('feature_request') }}">[m
+[31m-          <span class="map-home-action-icon" aria-hidden="true">[m
+[31m-            <svg viewBox="0 0 24 24">[m
+[31m-              <path d="M9 18h6M10 21h4"/>[m
+[31m-              <path d="M8.2 14.8A6 6 0 1 1 15.8 14.8c-1.1.8-1.5 1.5-1.6 2.2h-4.4c-.1-.7-.5-1.4-1.6-2.2Z"/>[m
+[31m-            </svg>[m
+[31m-          </span>[m
+[31m-          <span class="map-home-action-copy">[m
+[31m-            <strong>Feature Request</strong>[m
+[31m-            <span>Suggest an improvement or new capability</span>[m
+[31m-          </span>[m
+[31m-          <span class="map-home-action-meta">Feedback</span>[m
+[31m-          <span class="map-home-action-arrow" aria-hidden="true">→</span>[m
+[31m-        </a>[m
+       </nav>[m
+ [m
+       <footer class="map-home-footer">[m
+[1mdiff --git a/templates/session_select.html b/templates/session_select.html[m
+[1mindex eb1a130..c5282fe 100644[m
+[1m--- a/templates/session_select.html[m
+[1m+++ b/templates/session_select.html[m
+[36m@@ -1,43 +1,99 @@[m
+ <!doctype html>[m
+[31m-<html>[m
+[32m+[m[32m<html lang="en">[m
+ <head>[m
+   <meta charset="utf-8">[m
+   <meta name="viewport" content="width=device-width,initial-scale=1">[m
+[32m+[m[32m  <meta name="color-scheme" content="dark">[m
+[32m+[m[32m  <meta name="theme-color" content="#0b0d0f">[m
+   <title>The Scrying Table - VTT: Choose Session</title>[m
+   <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">[m
+   <link rel="stylesheet" href="{{ url_for('static',filename='newman-node.css',v='1.18.0') }}">[m
+   <link rel="stylesheet" href="{{ url_for('static',filename='map-admin.css',v='1.18.0') }}">[m
+[32m+[m[32m  <link rel="stylesheet" href="{{ url_for('static',filename='map-session-select.css',v='1.18.2') }}">[m
+ </head>[m
+[31m-<body class="portal-page">[m
+[31m-  <main class="portal-card">[m
+[31m-    <h1>Choose a Session</h1>[m
+[31m-    {% if mode == "viewer" %}[m
+[31m-      <p class="portal-intro">Choose the session your GM is running to open the read-only viewer.</p>[m
+[31m-    {% else %}[m
+[31m-      <p class="portal-intro">Choose the session your GM is running. You will choose your player name on the next page.</p>[m
+[31m-    {% endif %}[m
+[32m+[m[32m<body class="portal-page map-session-page">[m
+[32m+[m[32m  <a class="map-session-skip" href="#available-sessions">Skip to available sessions</a>[m
+ [m
+[31m-    {% if sessions %}[m
+[31m-      <nav class="portal-links" aria-label="Available game sessions">[m
+[31m-        {% for game in sessions %}[m
+[31m-          <a class="portal-link" href="{{ game.viewer_url if mode == 'viewer' else game.player_url }}">[m
+[31m-            <strong>{{ game.label }}</strong>[m
+[31m-            {% if mode == "viewer" %}[m
+[31m-              <span>Open this session's viewer</span>[m
+[31m-            {% else %}[m
+[31m-              <span>Choose your player name</span>[m
+[31m-            {% endif %}[m
+[31m-          </a>[m
+[31m-        {% endfor %}[m
+[31m-      </nav>[m
+[31m-    {% else %}[m
+[31m-      <div class="message error">No game sessions are available yet.</div>[m
+[31m-    {% endif %}[m
+[31m-[m
+[31m-    <div class="portal-footer-links">[m
+[31m-      <a href="/">Home</a>[m
+[31m-      {% if mode == "player" %}<a href="/help/player">Player help</a>{% endif %}[m
+[32m+[m[32m  <header class="map-session-topbar">[m
+[32m+[m[32m    <div class="map-session-topbar-inner">[m
+[32m+[m[32m      <a class="map-session-brand" href="{{ url_for('home') }}" aria-label="The Scrying Table home">[m
+[32m+[m[32m        <span class="map-session-brand-mark" aria-hidden="true">[m
+[32m+[m[32m          <span></span><span></span><span></span><span></span>[m
+[32m+[m[32m        </span>[m
+[32m+[m[32m        <span class="map-session-brand-text">[m
+[32m+[m[32m          <strong>Newman Node</strong>[m
+[32m+[m[32m          <span>The Scrying Table</span>[m
+[32m+[m[32m        </span>[m
+[32m+[m[32m      </a>[m
+[32m+[m[32m      <a class="map-session-back" href="{{ url_for('home') }}"><span aria-hidden="true">←</span> Home</a>[m
+     </div>[m
+[32m+[m[32m  </header>[m
+[32m+[m
+[32m+[m[32m  <main class="map-session-shell">[m
+[32m+[m[32m    <section class="map-session-card" aria-labelledby="session-title">[m
+[32m+[m[32m      <header class="map-session-hero">[m
+[32m+[m[32m        <div>[m
+[32m+[m[32m          <p class="map-session-eyebrow">Newman Node / Virtual Tabletop</p>[m
+[32m+[m[32m          {% if mode == "viewer" %}[m
+[32m+[m[32m            <h1 id="session-title">Viewer Sessions</h1>[m
+[32m+[m[32m            <p>Choose the Game Master session you want to open in the read-only map viewer.</p>[m
+[32m+[m[32m          {% else %}[m
+[32m+[m[32m            <h1 id="session-title">Player Sessions</h1>[m
+[32m+[m[32m            <p>Choose the Game Master session you are joining. You will choose your player name on the next screen.</p>[m
+[32m+[m[32m          {% endif %}[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m        <div class="map-session-mode" aria-label="Current mode">[m
+[32m+[m[32m          {% if mode == "viewer" %}Viewer{% else %}Player{% endif %}[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m      </header>[m
+[32m+[m
+[32m+[m[32m      <section class="map-session-list-section" id="available-sessions">[m
+[32m+[m[32m        <header class="map-session-list-heading">[m
+[32m+[m[32m          <div>[m
+[32m+[m[32m            <p class="map-session-kicker">Available</p>[m
+[32m+[m[32m            <h2>Choose a session</h2>[m
+[32m+[m[32m          </div>[m
+[32m+[m[32m          <span>{{ sessions|length }} {{ 'session' if sessions|length == 1 else 'sessions' }}</span>[m
+[32m+[m[32m        </header>[m
+[32m+[m
+[32m+[m[32m        {% if sessions %}[m
+[32m+[m[32m          <nav class="map-session-list" aria-label="Available game sessions">[m
+[32m+[m[32m            {% for game in sessions %}[m
+[32m+[m[32m              <a class="map-session-row" href="{{ game.viewer_url if mode == 'viewer' else game.player_url }}">[m
+[32m+[m[32m                <span class="map-session-icon" aria-hidden="true">[m
+[32m+[m[32m                  {% if mode == "viewer" %}[m
+[32m+[m[32m                    <svg viewBox="0 0 24 24"><path d="M3.5 12s3.2-5 8.5-5 8.5 5 8.5 5-3.2 5-8.5 5-8.5-5-8.5-5Z"/><circle cx="12" cy="12" r="2.25"/></svg>[m
+[32m+[m[32m                  {% else %}[m
+[32m+[m[32m                    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6.5 19c.7-3.3 2.6-5 5.5-5s4.8 1.7 5.5 5"/></svg>[m
+[32m+[m[32m                  {% endif %}[m
+[32m+[m[32m                </span>[m
+[32m+[m[32m                <span class="map-session-copy">[m
+[32m+[m[32m                  <strong>{{ game.label }}</strong>[m
+[32m+[m[32m                  {% if mode == "viewer" %}[m
+[32m+[m[32m                    <span>Open this session's read-only map</span>[m
+[32m+[m[32m                  {% else %}[m
+[32m+[m[32m                    <span>Continue to player selection and sign-in</span>[m
+[32m+[m[32m                  {% endif %}[m
+[32m+[m[32m                </span>[m
+[32m+[m[32m                <span class="map-session-meta">{{ 'Display' if mode == 'viewer' else 'VTT' }}</span>[m
+[32m+[m[32m                <span class="map-session-arrow" aria-hidden="true">→</span>[m
+[32m+[m[32m              </a>[m
+[32m+[m[32m            {% endfor %}[m
+[32m+[m[32m          </nav>[m
+[32m+[m[32m        {% else %}[m
+[32m+[m[32m          <div class="map-session-empty">[m
+[32m+[m[32m            <strong>No sessions available</strong>[m
+[32m+[m[32m            <span>A Game Master must initialize a session before it appears here.</span>[m
+[32m+[m[32m          </div>[m
+[32m+[m[32m        {% endif %}[m
+[32m+[m
+[32m+[m[32m        <footer class="map-session-footer">[m
+[32m+[m[32m          <a href="{{ url_for('home') }}">Return home</a>[m
+[32m+[m[32m          {% if mode == "player" %}<a href="{{ url_for('player_help') }}">Player help</a>{% endif %}[m
+[32m+[m[32m          <span class="map-session-host">map.newmannode.com</span>[m
+[32m+[m[32m        </footer>[m
+[32m+[m[32m      </section>[m
+[32m+[m[32m    </section>[m
+   </main>[m
+ </body>[m
+ </html>[m

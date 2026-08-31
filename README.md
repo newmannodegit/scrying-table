@@ -122,7 +122,6 @@ Runtime data is not part of the repository:
 
 ```text
 data/
-├── feature_requests.jsonl
 └── games/
     └── <gm>/
         ├── .auth-revision

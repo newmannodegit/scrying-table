@@ -252,11 +252,6 @@ token_log_lock = threading.Lock()
 vision_polygon_cache = {}
 vision_polygon_cache_lock = threading.Lock()
 VISION_POLYGON_CACHE_MAX = 512
-FEATURE_REQUEST_FILE = DATA_DIR / "feature_requests.jsonl"
-FEATURE_REQUEST_MAX_CHARS = 3000
-FEATURE_REQUEST_NAME_MAX_CHARS = 80
-FEATURE_REQUEST_CHALLENGE_SECONDS = 15 * 60
-feature_request_lock = threading.Lock()
 FEET_PER_GRID_SQUARE = 5.0
 NPC_REVEAL_RADIUS_FEET = 1.0
 VISION_RAY_COUNT = 128
@@ -1236,116 +1231,6 @@ def fail_login(kind, ip):
 def clear_failures(kind, ip):
     with failures_lock:
         failures[kind].setdefault(current_game_slug(), {}).pop(ip, None)
-
-
-# The feature-request challenge is short-lived and consumed after one attempt.
-def feature_request_challenge(force_new=False):
-    now = int(time.time())
-    challenge = session.get("_feature_request_math")
-    valid = (
-        isinstance(challenge, dict)
-        and isinstance(challenge.get("left"), int)
-        and isinstance(challenge.get("right"), int)
-        and int(challenge.get("created", 0)) >= now - FEATURE_REQUEST_CHALLENGE_SECONDS
-    )
-    if force_new or not valid:
-        challenge = {
-            "left": secrets.randbelow(8) + 2,
-            "right": secrets.randbelow(8) + 2,
-            "created": now,
-        }
-        session["_feature_request_math"] = challenge
-    return challenge
-
-
-def append_feature_request(name, request_text):
-    record = {
-        "submitted_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
-        "status": "active",
-        "name": name or None,
-        "request": request_text,
-    }
-    line = json.dumps(record, ensure_ascii=False) + "\n"
-    with feature_request_lock:
-        # Keep user-submitted request data private to the service account.
-        fd = os.open(FEATURE_REQUEST_FILE, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
-        try:
-            os.write(fd, line.encode("utf-8"))
-        finally:
-            os.close(fd)
-
-
-def read_feature_requests():
-    """Return public feature requests grouped by status, then newest first."""
-    if not FEATURE_REQUEST_FILE.exists():
-        return []
-
-    records = []
-    with feature_request_lock:
-        try:
-            lines = FEATURE_REQUEST_FILE.read_text(encoding="utf-8").splitlines()
-        except OSError:
-            app.logger.exception("Could not read feature requests")
-            return []
-
-    for line in lines:
-        if not line.strip():
-            continue
-        try:
-            item = json.loads(line)
-        except (TypeError, ValueError):
-            continue
-        if not isinstance(item, dict):
-            continue
-
-        request_text = str(item.get("request") or "").strip()
-        if not request_text:
-            continue
-        name = str(item.get("name") or "").strip() or None
-
-        # Older request records have no status and are treated as active.
-        raw_status = str(item.get("status") or "active").strip().casefold() or "active"
-        if raw_status == "active":
-            status = "active"
-            status_rank = 0
-        elif raw_status == "completed":
-            status = "completed"
-            status_rank = 1
-        else:
-            status = raw_status
-            status_rank = 2
-
-        submitted_at = str(item.get("submitted_at") or "").strip()
-        submitted_display = submitted_at
-        submitted_sort = datetime.min.replace(tzinfo=timezone.utc)
-        if submitted_at:
-            try:
-                stamp = datetime.fromisoformat(submitted_at.replace("Z", "+00:00"))
-                if stamp.tzinfo is None:
-                    stamp = stamp.replace(tzinfo=timezone.utc)
-                submitted_sort = stamp.astimezone(timezone.utc)
-                submitted_display = submitted_sort.strftime("%Y-%m-%d %H:%M UTC")
-            except ValueError:
-                pass
-
-        # Pass only public fields to the template.
-        records.append({
-            "name": name,
-            "request": request_text,
-            "status": status,
-            "status_class": status if status in {"active", "completed"} else "other",
-            "submitted_at": submitted_display,
-            "_status_rank": status_rank,
-            "_submitted_sort": submitted_sort,
-        })
-
-    # Stable sorts keep newest-first ordering inside each status group.
-    records.sort(key=lambda item: item["_submitted_sort"], reverse=True)
-    records.sort(key=lambda item: item["_status_rank"])
-    for item in records:
-        item.pop("_status_rank", None)
-        item.pop("_submitted_sort", None)
-    return records
 
 
 # ---- Audit log ------------------------------------------------------------
@@ -2571,70 +2456,6 @@ def viewer():
             sessions=available_public_sessions(),
         )
     return render_template("viewer.html")
-
-
-@app.route("/feature-request", methods=["GET", "POST"])
-def feature_request():
-    error = None
-    success = bool(session.pop("_feature_request_submitted", False))
-    name = ""
-    request_text = ""
-
-    if request.method == "POST":
-        check_csrf()
-        if request.content_length and request.content_length > 16 * 1024:
-            abort(413)
-
-        name = str(request.form.get("name") or "").strip()
-        request_text = str(request.form.get("request_text") or "").strip()
-        answer = str(request.form.get("math_answer") or "").strip()
-
-        if len(name) > FEATURE_REQUEST_NAME_MAX_CHARS:
-            error = f"Name must be {FEATURE_REQUEST_NAME_MAX_CHARS} characters or fewer."
-        elif not request_text:
-            error = "Enter a feature request."
-        elif len(request_text) > FEATURE_REQUEST_MAX_CHARS:
-            error = f"Feature request must be {FEATURE_REQUEST_MAX_CHARS} characters or fewer."
-        else:
-            challenge = feature_request_challenge()
-            session.pop("_feature_request_math", None)
-            try:
-                correct = int(answer) == challenge["left"] + challenge["right"]
-            except (TypeError, ValueError):
-                correct = False
-
-            if not correct:
-                error = "The math answer was incorrect. Try the new question below."
-            else:
-                try:
-                    append_feature_request(name, request_text)
-                except OSError:
-                    app.logger.exception("Could not write feature request")
-                    error = "The request could not be saved. Please try again."
-                else:
-                    session["_feature_request_submitted"] = True
-                    return redirect(url_for("feature_request"))
-
-    challenge = feature_request_challenge(force_new=bool(error and request.method == "POST"))
-    return render_template(
-        "feature_request.html",
-        error=error,
-        success=success,
-        name=name,
-        request_text=request_text,
-        math_left=challenge["left"],
-        math_right=challenge["right"],
-        max_request_chars=FEATURE_REQUEST_MAX_CHARS,
-        max_name_chars=FEATURE_REQUEST_NAME_MAX_CHARS,
-    )
-
-
-@app.get("/feature-requests")
-def feature_requests():
-    return render_template(
-        "feature_requests.html",
-        feature_requests=read_feature_requests(),
-    )
 
 
 @app.route("/player", methods=["GET", "POST"])

@@ -1,3 +1,9 @@
+Version 1.18.2
+- Refined the public Viewer and Player session choosers to use the compact Newman Node session-row design.
+- Removed the Feature Request feature, including its landing-page entry, Flask routes and helpers, templates, styles, and current documentation reference.
+- Existing feature-request data is no longer used by the application; the production installer archives any live feature_requests.jsonl file before removing it from the active data directory.
+- Viewer, player VTT, GM editor, map state, authentication, and session behavior are unchanged.
+
 Version 1.18.1
 - Refined the public landing page to match the Newman Node launcher design used by the rest of the tool suite.
 - Replaced the oversized portal buttons with compact action rows for Viewer, GM Editor, Player, and Feature Request.

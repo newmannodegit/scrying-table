@@ -1,43 +1,99 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b0d0f">
   <title>The Scrying Table - VTT: Choose Session</title>
   <link rel="stylesheet" href="{{ url_for('static',filename='app.css',v='1.17.3') }}">
   <link rel="stylesheet" href="{{ url_for('static',filename='newman-node.css',v='1.18.0') }}">
   <link rel="stylesheet" href="{{ url_for('static',filename='map-admin.css',v='1.18.0') }}">
+  <link rel="stylesheet" href="{{ url_for('static',filename='map-session-select.css',v='1.18.2') }}">
 </head>
-<body class="portal-page">
-  <main class="portal-card">
-    <h1>Choose a Session</h1>
-    {% if mode == "viewer" %}
-      <p class="portal-intro">Choose the session your GM is running to open the read-only viewer.</p>
-    {% else %}
-      <p class="portal-intro">Choose the session your GM is running. You will choose your player name on the next page.</p>
-    {% endif %}
+<body class="portal-page map-session-page">
+  <a class="map-session-skip" href="#available-sessions">Skip to available sessions</a>
 
-    {% if sessions %}
-      <nav class="portal-links" aria-label="Available game sessions">
-        {% for game in sessions %}
-          <a class="portal-link" href="{{ game.viewer_url if mode == 'viewer' else game.player_url }}">
-            <strong>{{ game.label }}</strong>
-            {% if mode == "viewer" %}
-              <span>Open this session's viewer</span>
-            {% else %}
-              <span>Choose your player name</span>
-            {% endif %}
-          </a>
-        {% endfor %}
-      </nav>
-    {% else %}
-      <div class="message error">No game sessions are available yet.</div>
-    {% endif %}
-
-    <div class="portal-footer-links">
-      <a href="/">Home</a>
-      {% if mode == "player" %}<a href="/help/player">Player help</a>{% endif %}
+  <header class="map-session-topbar">
+    <div class="map-session-topbar-inner">
+      <a class="map-session-brand" href="{{ url_for('home') }}" aria-label="The Scrying Table home">
+        <span class="map-session-brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </span>
+        <span class="map-session-brand-text">
+          <strong>Newman Node</strong>
+          <span>The Scrying Table</span>
+        </span>
+      </a>
+      <a class="map-session-back" href="{{ url_for('home') }}"><span aria-hidden="true">←</span> Home</a>
     </div>
+  </header>
+
+  <main class="map-session-shell">
+    <section class="map-session-card" aria-labelledby="session-title">
+      <header class="map-session-hero">
+        <div>
+          <p class="map-session-eyebrow">Newman Node / Virtual Tabletop</p>
+          {% if mode == "viewer" %}
+            <h1 id="session-title">Viewer Sessions</h1>
+            <p>Choose the Game Master session you want to open in the read-only map viewer.</p>
+          {% else %}
+            <h1 id="session-title">Player Sessions</h1>
+            <p>Choose the Game Master session you are joining. You will choose your player name on the next screen.</p>
+          {% endif %}
+        </div>
+        <div class="map-session-mode" aria-label="Current mode">
+          {% if mode == "viewer" %}Viewer{% else %}Player{% endif %}
+        </div>
+      </header>
+
+      <section class="map-session-list-section" id="available-sessions">
+        <header class="map-session-list-heading">
+          <div>
+            <p class="map-session-kicker">Available</p>
+            <h2>Choose a session</h2>
+          </div>
+          <span>{{ sessions|length }} {{ 'session' if sessions|length == 1 else 'sessions' }}</span>
+        </header>
+
+        {% if sessions %}
+          <nav class="map-session-list" aria-label="Available game sessions">
+            {% for game in sessions %}
+              <a class="map-session-row" href="{{ game.viewer_url if mode == 'viewer' else game.player_url }}">
+                <span class="map-session-icon" aria-hidden="true">
+                  {% if mode == "viewer" %}
+                    <svg viewBox="0 0 24 24"><path d="M3.5 12s3.2-5 8.5-5 8.5 5 8.5 5-3.2 5-8.5 5-8.5-5-8.5-5Z"/><circle cx="12" cy="12" r="2.25"/></svg>
+                  {% else %}
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6.5 19c.7-3.3 2.6-5 5.5-5s4.8 1.7 5.5 5"/></svg>
+                  {% endif %}
+                </span>
+                <span class="map-session-copy">
+                  <strong>{{ game.label }}</strong>
+                  {% if mode == "viewer" %}
+                    <span>Open this session's read-only map</span>
+                  {% else %}
+                    <span>Continue to player selection and sign-in</span>
+                  {% endif %}
+                </span>
+                <span class="map-session-meta">{{ 'Display' if mode == 'viewer' else 'VTT' }}</span>
+                <span class="map-session-arrow" aria-hidden="true">→</span>
+              </a>
+            {% endfor %}
+          </nav>
+        {% else %}
+          <div class="map-session-empty">
+            <strong>No sessions available</strong>
+            <span>A Game Master must initialize a session before it appears here.</span>
+          </div>
+        {% endif %}
+
+        <footer class="map-session-footer">
+          <a href="{{ url_for('home') }}">Return home</a>
+          {% if mode == "player" %}<a href="{{ url_for('player_help') }}">Player help</a>{% endif %}
+          <span class="map-session-host">map.newmannode.com</span>
+        </footer>
+      </section>
+    </section>
   </main>
 </body>
 </html>
