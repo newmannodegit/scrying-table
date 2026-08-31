@@ -1,0 +1,66 @@
+:root {
+  color-scheme: dark;
+
+  --nn-bg: #0b0d0f;
+  --nn-bg-subtle: #0e1114;
+  --nn-surface: #111418;
+  --nn-surface-raised: #15191e;
+  --nn-surface-hover: #191e24;
+  --nn-surface-selected: #1c221f;
+
+  --nn-text: #f3f5f7;
+  --nn-text-secondary: #b0b7c0;
+  --nn-text-muted: #747d87;
+  --nn-text-faint: #59616a;
+
+  --nn-border: #272c32;
+  --nn-border-subtle: #1d2227;
+  --nn-border-strong: #363d45;
+
+  --nn-accent: #9eaf8d;
+  --nn-accent-strong: #b7c5a8;
+  --nn-accent-muted: rgba(158, 175, 141, 0.12);
+
+  --nn-success: #8fb58a;
+  --nn-warning: #c29a65;
+  --nn-danger: #c97878;
+  --nn-info: #8aa8bd;
+  --nn-focus: rgba(158, 175, 141, 0.38);
+
+  --nn-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --nn-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  --nn-radius-xs: 4px;
+  --nn-radius-sm: 6px;
+  --nn-radius-md: 9px;
+  --nn-radius-lg: 12px;
+
+  --nn-ease: cubic-bezier(.2, .8, .2, 1);
+  --nn-duration-fast: 120ms;
+  --nn-duration: 180ms;
+  --nn-shadow-soft: 0 18px 50px rgba(0, 0, 0, 0.24);
+}
+
+::selection {
+  background: rgba(158, 175, 141, 0.28);
+}
+
+.nn-mono,
+.editor-page code,
+.portal-page code,
+.editor-page .player-activity-row span:last-child {
+  font-family: var(--nn-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

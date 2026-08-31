@@ -1,0 +1,717 @@
+/*
+ * Newman Node administrative theme for The Scrying Table.
+ *
+ * This stylesheet is deliberately loaded only by administrative, login,
+ * selector, and help templates. Viewer, player VTT, and GM wall-map
+ * templates do not load it.
+ */
+
+body.editor-page,
+body.portal-page {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(158, 175, 141, 0.045), transparent 28rem),
+    var(--nn-bg);
+  color: var(--nn-text);
+  font-family: var(--nn-font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.editor-page *,
+.portal-page * {
+  box-sizing: border-box;
+}
+
+.editor-page a,
+.portal-page a {
+  color: var(--nn-accent-strong);
+  text-underline-offset: 2px;
+}
+
+.editor-page a:hover,
+.portal-page a:hover {
+  color: #cad5bf;
+}
+
+/* Main editor shell */
+
+.editor-page .editor-card {
+  width: min(1480px, calc(100% - 32px));
+  margin: 18px auto;
+  padding: 0;
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-lg);
+  background: var(--nn-bg-subtle);
+  box-shadow: var(--nn-shadow-soft);
+  overflow: hidden;
+}
+
+.editor-page .editor-card.narrow-card,
+.editor-page .narrow-card {
+  width: min(520px, calc(100% - 28px));
+  margin-top: clamp(28px, 8vh, 86px);
+  padding: 26px;
+  overflow: visible;
+}
+
+.editor-page .editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--nn-border-subtle);
+  background: rgba(11, 13, 15, 0.66);
+}
+
+.editor-page .editor-header h1,
+.editor-page .editor-card > h1,
+.editor-page .help-card h1,
+.portal-page .portal-card h1 {
+  margin: 0;
+  color: var(--nn-text);
+  font-weight: 640;
+  letter-spacing: -0.035em;
+}
+
+.editor-page .editor-header h1 {
+  font-size: 20px;
+}
+
+.editor-page .editor-header p {
+  margin: 4px 0 0;
+  color: var(--nn-text-muted);
+  font-size: 11px;
+}
+
+.editor-page .header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.editor-page .header-actions form {
+  margin: 0;
+}
+
+.editor-page .editor-grid {
+  gap: 12px;
+  padding: 12px;
+}
+
+.editor-page .editor-left-column,
+.editor-page .editor-right-column {
+  gap: 10px;
+}
+
+/* Panels and collapsible groups */
+
+.editor-page .panel,
+.editor-page .help-card .panel {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-md);
+  background: var(--nn-surface);
+  box-shadow: none;
+}
+
+.editor-page .panel h2,
+.editor-page .panel h3 {
+  color: var(--nn-text);
+  letter-spacing: -0.018em;
+}
+
+.editor-page .panel h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 640;
+}
+
+.editor-page .panel h3 {
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.editor-page .editor-setup-collapse {
+  margin: 0;
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-md);
+  background: var(--nn-surface);
+  overflow: hidden;
+}
+
+.editor-page .editor-setup-collapse > summary {
+  min-height: 39px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  border-bottom: 1px solid transparent;
+  color: var(--nn-text);
+  font-size: 12px;
+  font-weight: 620;
+  list-style-position: inside;
+  transition:
+    background var(--nn-duration-fast) var(--nn-ease),
+    border-color var(--nn-duration-fast) var(--nn-ease);
+}
+
+.editor-page .editor-setup-collapse > summary:hover {
+  background: var(--nn-surface-hover);
+}
+
+.editor-page .editor-setup-collapse[open] > summary {
+  border-bottom-color: var(--nn-border-subtle);
+}
+
+.editor-page .setup-summary-help {
+  color: var(--nn-text-muted);
+  font-size: 10.5px;
+  font-weight: 450;
+}
+
+.editor-page .editor-setup-grid {
+  padding: 10px;
+}
+
+.editor-page .editor-setup-grid,
+.editor-page .editor-action-grid,
+.editor-page .editor-setup-column {
+  gap: 10px;
+}
+
+/* Typography and secondary information */
+
+.editor-page .help-text,
+.portal-page .portal-intro,
+.editor-page .history-note {
+  color: var(--nn-text-muted);
+}
+
+.editor-page .help-text {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.editor-page label,
+.portal-page label {
+  color: var(--nn-text-secondary);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.editor-page output {
+  color: var(--nn-text-muted);
+  font-family: var(--nn-font-mono);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.editor-page code,
+.portal-page code {
+  padding: 1px 5px;
+  border: 1px solid var(--nn-border-subtle);
+  border-radius: var(--nn-radius-xs);
+  background: #0c0f12;
+  color: #c3c9cf;
+  font-size: .9em;
+}
+
+/* Controls */
+
+.editor-page button,
+.editor-page .button-link,
+.portal-page button,
+.portal-page .button-link,
+.portal-page .portal-actions a,
+.portal-page .session-link {
+  min-height: 32px;
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-sm);
+  background: var(--nn-surface-raised);
+  color: var(--nn-text);
+  font-family: var(--nn-font-sans);
+  font-size: 11.5px;
+  font-weight: 570;
+  line-height: 1.2;
+  text-decoration: none;
+  box-shadow: none;
+  transition:
+    border-color var(--nn-duration-fast) var(--nn-ease),
+    background var(--nn-duration-fast) var(--nn-ease),
+    color var(--nn-duration-fast) var(--nn-ease),
+    transform var(--nn-duration-fast) var(--nn-ease);
+}
+
+.editor-page button,
+.editor-page .button-link,
+.portal-page button,
+.portal-page .button-link {
+  padding: 6px 10px;
+}
+
+.editor-page button:hover,
+.editor-page .button-link:hover,
+.portal-page button:hover,
+.portal-page .button-link:hover,
+.portal-page .portal-actions a:hover,
+.portal-page .session-link:hover {
+  border-color: var(--nn-border-strong);
+  background: var(--nn-surface-hover);
+  color: var(--nn-text);
+}
+
+.editor-page button:active,
+.editor-page .button-link:active,
+.portal-page button:active,
+.portal-page .button-link:active {
+  transform: translateY(1px);
+}
+
+.editor-page button:focus-visible,
+.editor-page .button-link:focus-visible,
+.editor-page input:focus-visible,
+.editor-page select:focus-visible,
+.editor-page textarea:focus-visible,
+.portal-page button:focus-visible,
+.portal-page .button-link:focus-visible,
+.portal-page input:focus-visible,
+.portal-page select:focus-visible,
+.portal-page textarea:focus-visible,
+.portal-page .portal-actions a:focus-visible,
+.portal-page .session-link:focus-visible {
+  outline: none;
+  border-color: var(--nn-accent);
+  box-shadow: 0 0 0 3px var(--nn-focus);
+}
+
+.editor-page .primary-button,
+.portal-page .primary-button {
+  border-color: #69755f;
+  background: #879a76;
+  color: #0d110b;
+}
+
+.editor-page .primary-button:hover,
+.portal-page .primary-button:hover {
+  border-color: #849278;
+  background: #9bac89;
+  color: #0b0e09;
+}
+
+.editor-page .danger-button,
+.portal-page .danger-button {
+  border-color: rgba(201, 120, 120, .34);
+  background: rgba(201, 120, 120, .055);
+  color: #dda0a0;
+}
+
+.editor-page .danger-button:hover,
+.portal-page .danger-button:hover {
+  border-color: rgba(201, 120, 120, .55);
+  background: rgba(201, 120, 120, .1);
+}
+
+.editor-page button:disabled,
+.editor-page input:disabled,
+.editor-page select:disabled,
+.portal-page button:disabled,
+.portal-page input:disabled,
+.portal-page select:disabled {
+  opacity: .46;
+  cursor: not-allowed;
+}
+
+.editor-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+.editor-page select,
+.editor-page textarea,
+.portal-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+.portal-page select,
+.portal-page textarea {
+  min-height: 32px;
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-sm);
+  background: #0d1013;
+  color: var(--nn-text);
+  padding: 5px 8px;
+  font-family: var(--nn-font-sans);
+  font-size: 12px;
+  box-shadow: none;
+  transition:
+    border-color var(--nn-duration-fast) var(--nn-ease),
+    background var(--nn-duration-fast) var(--nn-ease),
+    box-shadow var(--nn-duration-fast) var(--nn-ease);
+}
+
+.editor-page input:hover,
+.editor-page select:hover,
+.editor-page textarea:hover,
+.portal-page input:hover,
+.portal-page select:hover,
+.portal-page textarea:hover {
+  border-color: var(--nn-border-strong);
+}
+
+.editor-page input[type="checkbox"],
+.portal-page input[type="checkbox"] {
+  accent-color: #8fa47e;
+}
+
+.editor-page input[type="range"],
+.portal-page input[type="range"] {
+  accent-color: #8fa47e;
+}
+
+.editor-page input[type="color"] {
+  width: 34px;
+  height: 27px;
+  padding: 2px;
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-sm);
+  background: #0d1013;
+}
+
+/* Status messaging */
+
+.editor-page .message,
+.portal-page .message {
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-sm);
+  background: var(--nn-surface);
+  color: var(--nn-text-secondary);
+  box-shadow: none;
+}
+
+.editor-page .message.success,
+.portal-page .message.success {
+  border-color: rgba(143, 181, 138, .32);
+  background: rgba(143, 181, 138, .07);
+  color: #b5cdb0;
+}
+
+.editor-page .message.error,
+.portal-page .message.error {
+  border-color: rgba(201, 120, 120, .34);
+  background: rgba(201, 120, 120, .07);
+  color: #dfa4a4;
+}
+
+/* Map library, tokens, AOEs, initiative, activity */
+
+.editor-page .map-library-list,
+.editor-page .token-list,
+.editor-page .area-list,
+.editor-page .initiative-list {
+  gap: 7px;
+}
+
+.editor-page .map-library-item,
+.editor-page .token-card,
+.editor-page .area-card,
+.editor-page .initiative-item {
+  border-color: var(--nn-border);
+  border-radius: var(--nn-radius-sm);
+  background: #0e1114;
+  box-shadow: none;
+}
+
+.editor-page .map-library-item:hover,
+.editor-page .token-card:hover,
+.editor-page .area-card:hover,
+.editor-page .initiative-item:hover {
+  border-color: var(--nn-border-strong);
+}
+
+.editor-page .map-library-item.active,
+.editor-page .map-library-item.is-active {
+  border-color: #596550;
+  background: var(--nn-surface-selected);
+}
+
+.editor-page .save-status,
+.editor-page .token-save-status,
+.editor-page .area-save-status {
+  color: var(--nn-text-muted);
+  font-size: 10px;
+}
+
+.editor-page .player-activity-panel {
+  margin-top: 0;
+}
+
+.editor-page .player-activity-group + .player-activity-group {
+  border-top-color: var(--nn-border-subtle);
+}
+
+.editor-page .player-activity-head {
+  color: var(--nn-text-faint);
+  font-size: 9.5px;
+  font-weight: 650;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.editor-page .player-activity-row {
+  border-color: var(--nn-border-subtle);
+  background: #0d1013;
+  color: var(--nn-text-secondary);
+  font-size: 10.5px;
+}
+
+.editor-page .player-activity-log {
+  scrollbar-color: #39413a #111418;
+  scrollbar-width: thin;
+}
+
+/* Preserve the map itself. Only refine its administrative frame. */
+
+.editor-page .map-shell,
+.editor-page .map-stage,
+.editor-page .map-container,
+.editor-page #mapWrapper {
+  border-color: var(--nn-border);
+  background-color: #07090b;
+  box-shadow: none;
+}
+
+.editor-page .map-toolbar,
+.editor-page .map-controls {
+  border-color: var(--nn-border-subtle);
+}
+
+/* Help and history */
+
+.editor-page .help-card {
+  width: min(940px, calc(100% - 32px));
+  margin: 28px auto 48px;
+  padding: 24px;
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-lg);
+  background: var(--nn-bg-subtle);
+  box-shadow: var(--nn-shadow-soft);
+}
+
+.editor-page .help-card > h1 {
+  font-size: 24px;
+}
+
+.editor-page .help-card > p,
+.editor-page .help-card li {
+  color: var(--nn-text-secondary);
+}
+
+.editor-page .history-era {
+  margin-top: 26px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--nn-border-subtle);
+  color: var(--nn-text-muted);
+  font-size: 10px;
+  font-weight: 680;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.editor-page .history-entry {
+  margin-top: 8px;
+}
+
+.editor-page .history-version {
+  color: var(--nn-text-secondary);
+}
+
+.editor-page .history-version strong {
+  color: var(--nn-text);
+}
+
+/* Portal, session chooser, and player-login utility pages */
+
+.portal-page {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.portal-page .portal-card {
+  width: min(620px, 100%);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--nn-border);
+  border-radius: var(--nn-radius-lg);
+  background: var(--nn-bg-subtle);
+  box-shadow: var(--nn-shadow-soft);
+}
+
+.portal-page .portal-card > h1,
+.portal-page .portal-card > .portal-intro,
+.portal-page .portal-card > p,
+.portal-page .portal-card > form,
+.portal-page .portal-card > .message,
+.portal-page .portal-card > .portal-actions,
+.portal-page .portal-card > .session-list,
+.portal-page .portal-card > nav {
+  margin-left: 24px;
+  margin-right: 24px;
+}
+
+.portal-page .portal-card > h1 {
+  margin-top: 24px;
+  font-size: 23px;
+}
+
+.portal-page .portal-intro {
+  margin-top: 7px;
+  margin-bottom: 18px;
+  font-size: 12.5px;
+}
+
+.portal-page .portal-actions,
+.portal-page .session-list {
+  display: grid;
+  gap: 7px;
+}
+
+.portal-page .portal-actions {
+  margin-bottom: 24px;
+}
+
+.portal-page .portal-actions a,
+.portal-page .session-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 9px 11px;
+}
+
+.portal-page form {
+  margin-bottom: 24px;
+}
+
+.portal-page form .button-row {
+  margin-top: 14px;
+}
+
+/* Login utility */
+
+.editor-page .gm-login-card h1 {
+  font-size: 22px;
+}
+
+.editor-page .gm-login-card form {
+  display: grid;
+  gap: 7px;
+}
+
+.editor-page .gm-login-actions {
+  margin-top: 10px;
+}
+
+/* Footer */
+
+.editor-page .editor-version {
+  width: min(1480px, calc(100% - 32px));
+  margin: -6px auto 24px;
+  color: var(--nn-text-faint);
+  font-family: var(--nn-font-mono);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Responsive pass */
+
+@media (max-width: 900px) {
+  .editor-page .editor-card {
+    width: calc(100% - 20px);
+    margin: 10px auto;
+  }
+
+  .editor-page .editor-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .editor-page .header-actions {
+    width: 100%;
+  }
+
+  .editor-page .editor-grid {
+    padding: 9px;
+  }
+
+  .editor-page .help-card {
+    width: calc(100% - 20px);
+    margin: 10px auto 30px;
+  }
+
+  .editor-page .editor-version {
+    width: calc(100% - 20px);
+  }
+}
+
+@media (max-width: 620px) {
+  body.editor-page,
+  body.portal-page {
+    font-size: 13px;
+  }
+
+  .portal-page {
+    padding: 10px;
+  }
+
+  .portal-page .portal-card {
+    border-radius: var(--nn-radius-md);
+  }
+
+  .portal-page .portal-card > h1,
+  .portal-page .portal-card > .portal-intro,
+  .portal-page .portal-card > p,
+  .portal-page .portal-card > form,
+  .portal-page .portal-card > .message,
+  .portal-page .portal-card > .portal-actions,
+  .portal-page .portal-card > .session-list,
+  .portal-page .portal-card > nav {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .editor-page .editor-card.narrow-card,
+  .editor-page .narrow-card {
+    width: calc(100% - 20px);
+    margin-top: 18px;
+    padding: 19px;
+  }
+
+  .editor-page .panel {
+    padding: 11px;
+  }
+
+  .editor-page .editor-setup-grid {
+    padding: 8px;
+  }
+
+  .editor-page .button-row,
+  .editor-page .header-actions {
+    gap: 6px;
+  }
+
+  .editor-page .help-card {
+    padding: 17px;
+  }
+
+  .editor-page .help-card > h1 {
+    font-size: 21px;
+  }
+
+  .editor-page .editor-version {
+    text-align: center;
+  }
+}

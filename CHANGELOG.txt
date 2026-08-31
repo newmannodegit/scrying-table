@@ -1,3 +1,10 @@
+Version 1.18.0
+- Added the first Newman Node unified visual-design pass to The Scrying Table administrative and utility interfaces.
+- Added shared Newman Node design tokens and a Scrying Table-specific administrative theme.
+- Restyled the GM editor, GM login, public utility/selection pages, help pages, and version-history page without changing their backend behavior.
+- Viewer, player VTT, and GM Wall Map templates are intentionally unchanged and do not load the new theme.
+- No game-state schema, API, authentication, LOS, fog, token, door, initiative, AOE, or player-movement behavior changes.
+
 Version 1.17.6
 - Reordered the GM editor setup panels so VTT access appears above Grid overlay in the left column and Display controls appears in the right column.
 - No VTT access behavior, game state, or backend logic changes.
