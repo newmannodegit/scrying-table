@@ -62,38 +62,9 @@ body.portal-page.map-home-page {
   border-radius: var(--nn-radius-lg) var(--nn-radius-lg) 0 0;
   border-bottom-color: var(--nn-border-subtle);
   background:
-    radial-gradient(circle at 78% 32%, rgba(158,175,141,.12), transparent 18rem),
-    linear-gradient(125deg, #0d1113 0%, #111519 52%, #0a0d0f 100%);
-}
-
-.map-home-hero::before,
-.map-home-hero::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.map-home-hero::before {
-  inset: 0;
-  opacity: .19;
-  background-image:
-    linear-gradient(rgba(175,185,171,.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(175,185,171,.15) 1px, transparent 1px);
-  background-size: 38px 38px;
-  mask-image: linear-gradient(90deg, transparent 18%, #000 66%);
-}
-
-.map-home-hero::after {
-  right: -70px;
-  bottom: -120px;
-  width: 410px;
-  height: 410px;
-  border: 1px solid rgba(158,175,141,.12);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 46px rgba(158,175,141,.018),
-    0 0 0 92px rgba(158,175,141,.01);
+    linear-gradient(90deg, rgba(7,9,10,.88) 0%, rgba(7,9,10,.71) 43%, rgba(7,9,10,.34) 100%),
+    linear-gradient(0deg, rgba(7,9,10,.52), rgba(7,9,10,.08)),
+    url("/static/map.jpg") 50% 55% / cover no-repeat;
 }
 
 .map-home-hero-copy {

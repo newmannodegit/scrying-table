@@ -1,3 +1,7 @@
+Version 1.18.3
+- Added a map-specific hero image to the public Scrying Table landing page so it visually aligns with the rest of the Newman Node tool suite.
+- The new static/map.jpg asset is presentation-only; Viewer, Player, GM editor, routes, authentication, game state, and VTT mechanics are unchanged.
+
 Version 1.18.2
 - Refined the public Viewer and Player session choosers to use the compact Newman Node session-row design.
 - Removed the Feature Request feature, including its landing-page entry, Flask routes and helpers, templates, styles, and current documentation reference.
